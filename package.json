@@ -1,0 +1,16 @@
+{
+  "name": "typescript-closure-compiler",
+  "version": "0.1.0",
+  "description": "Patches the TypeScript compiler to generate JSDoc annotations",
+  "repository": "https://github.com/evanw/typescript-closure-compiler.git",
+  "scripts": {
+    "install": "node_modules/typescript/bin/tsc emitter.ts"
+  },
+  "bin": {
+    "tscc": "./typescript-closure-compiler"
+  },
+  "main": "./typescript-closure-compiler",
+  "dependencies": {
+    "typescript": "0.9.1-1"
+  }
+}
