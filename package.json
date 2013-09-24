@@ -10,7 +10,6 @@
   "bin": {
     "tscc": "./typescript-closure-compiler"
   },
-  "main": "./typescript-closure-compiler",
   "dependencies": {
     "typescript": "0.9.1-1"
   },
