@@ -22,23 +22,20 @@ TypeScript.InterfaceDeclaration.prototype.emit = function(emitter) {
 
 TypeScript.UnaryExpression.prototype.emitWorker = function(emitWorker) {
   return function(emitter) {
-    if (this.nodeType() === TypeScript.NodeType.CastExpression) {
-      emitter.emitInlineTypeComment(this.symbol.type);
-      emitter.writeToOutput('(');
-      this.operand.emit(emitter);
-      emitter.writeToOutput(')');
-    } else {
-      emitWorker.call(this, emitter);
-    }
+    emitter.emitUnaryExpression(this, emitWorker);
   };
 }(TypeScript.UnaryExpression.prototype.emitWorker);
 
 TypeScript.VariableStatement.prototype.emitWorker = function(emitter) {
-  if (TypeScript.hasFlag(this.getFlags(), TypeScript.ASTFlags.EnumElement)) {
-    emitter.emitEnumElement(this.declaration.declarators.members[0]);
-  } else {
-    this.declaration.emit(emitter);
-  }
+  emitter.emitVariableStatement(this);
+};
+
+TypeScript.ForStatement.prototype.emitWorker = function(emitter) {
+  emitter.emitForStatement(this);
+};
+
+TypeScript.ForInStatement.prototype.emitWorker = function(emitter) {
+  emitter.emitForInStatement(this);
 };
 
 process.mainModule.filename = require('path').resolve(TSC);

@@ -65,6 +65,7 @@ module M {
   }
 
   function f(index: number): string {
+    var x = index;
     return '';
   }
 
@@ -94,6 +95,7 @@ module M {
     }
 
     function f(index: number): string {
+      var x = index;
       return '';
     }
   }

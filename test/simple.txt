@@ -1,0 +1,264 @@
+/**
+ * @param {Function} d
+ * @param {Function} b
+ */
+var __extends = function (d, b) {
+  for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+  /** @constructor */ function __() { this.constructor = d; }
+  __.prototype = b.prototype;
+  d.prototype = new __();
+};
+/** @type {number} */ var v = 0;
+/** @type {boolean} */ var v1 = false;
+/** @type {number} */ var v2 = 0;
+
+/**
+ * @constructor
+ * @struct
+ */
+var A = function () {
+  /** @type {number} */ this.a;
+  /** @type {number} */ this.e = 0;
+};
+/**
+ * @param {number} a
+ * @returns {boolean}
+ */
+A.prototype.c = function (a) {
+  return false;
+};
+/**
+ * @param {number} a
+ * @returns {boolean}
+ */
+A.d = function (a) {
+  return false;
+};
+/**
+ * @type {number}
+ */
+A.b;
+
+/**
+ * @type {number}
+ */
+A.f = 0;
+
+
+/**
+ * @constructor
+ * @struct
+ * @extends {A}
+ * @implements {I}
+ */
+var B = function () {
+  A.call(this);
+  window['console'].log(A.prototype, this.c(/** @type {number} */ (window['foo'])));
+};
+
+__extends(B, A);
+
+
+/**
+ * @interface
+ */
+var I = function () {
+};
+
+/**
+ * @type {number}
+ */
+I.prototype.a;
+
+/**
+ * @param {number} a
+ * @returns {boolean}
+ */
+I.prototype.c = function (a) {
+};
+
+
+/**
+ * @param {number} index
+ * @returns {string?}
+ */
+var f = function (index) {
+  /** @type {?} */ var a;
+  /** @type {undefined} */ var b = void 0;
+  /** @type {number} */ var c = 0;
+  /** @type {string?} */ var d = '';
+  /** @type {boolean} */ var e = false;
+  /** @type {Array.<?>} */ var f = [];
+  /** @type {Array.<string?>} */ var g = [''];
+  /** @type {Array.<Array.<string?>>} */ var h = [['']];
+  /** @type {?function(): number} */ var i = function () {
+    return 0;
+  };
+  /** @type {{ 0: string? }} */ var j = { 0: 'a' };
+  /** @type {{ a: number }} */ var k = { a: 0 };
+  /** @type {Object.<number, string?>} */ var l = { 0: 'a' };
+  /** @type {Object.<string?, number>} */ var m = { a: 0 };
+  return '';
+};
+
+var M = {};
+/** @type {number} */ M.v = 0;
+/** @type {boolean} */ M.v1 = false;
+/** @type {number} */ M.v2 = 0;
+
+/**
+ * @constructor
+ * @struct
+ */
+M.A = function () {
+  /** @type {number} */ this.a;
+  /** @type {number} */ this.e = 0;
+};
+/**
+ * @param {number} a
+ * @returns {boolean}
+ */
+M.A.prototype.c = function (a) {
+  return false;
+};
+/**
+ * @param {number} a
+ * @returns {boolean}
+ */
+M.A.d = function (a) {
+  return false;
+};
+/**
+ * @type {number}
+ */
+M.A.b;
+
+/**
+ * @type {number}
+ */
+M.A.f = 0;
+
+
+/**
+ * @constructor
+ * @struct
+ * @extends {M.A}
+ * @implements {M.I}
+ */
+M.B = function () {
+  M.A.call(this);
+  window['console'].log(M.A.prototype);
+};
+
+__extends(M.B, M.A);
+
+
+/**
+ * @interface
+ */
+M.I = function () {
+};
+
+/**
+ * @type {number}
+ */
+M.I.prototype.a;
+
+/**
+ * @param {number} a
+ * @returns {boolean}
+ */
+M.I.prototype.c = function (a) {
+};
+
+
+/**
+ * @param {number} index
+ * @returns {string?}
+ */
+M.f = function (index) {
+  /** @type {number} */ var x = index;
+  return '';
+};
+
+M.MM = {};
+/** @type {number} */ M.MM.v = 0;
+/** @type {boolean} */ M.MM.v1 = false;
+/** @type {number} */ M.MM.v2 = 0;
+
+/**
+ * @constructor
+ * @struct
+ */
+M.MM.A = function () {
+  /** @type {number} */ this.a;
+  /** @type {number} */ this.e = 0;
+};
+/**
+ * @param {number} a
+ * @returns {boolean}
+ */
+M.MM.A.prototype.c = function (a) {
+  return false;
+};
+/**
+ * @param {number} a
+ * @returns {boolean}
+ */
+M.MM.A.d = function (a) {
+  return false;
+};
+/**
+ * @type {number}
+ */
+M.MM.A.b;
+
+/**
+ * @type {number}
+ */
+M.MM.A.f = 0;
+
+
+/**
+ * @constructor
+ * @struct
+ * @extends {M.MM.A}
+ * @implements {M.MM.I}
+ */
+M.MM.B = function () {
+  M.MM.A.call(this);
+  window['console'].log(M.MM.A.prototype);
+};
+
+__extends(M.MM.B, M.MM.A);
+
+
+/**
+ * @interface
+ */
+M.MM.I = function () {
+};
+
+/**
+ * @type {number}
+ */
+M.MM.I.prototype.a;
+
+/**
+ * @param {number} a
+ * @returns {boolean}
+ */
+M.MM.I.prototype.c = function (a) {
+};
+
+
+/**
+ * @param {number} index
+ * @returns {string?}
+ */
+M.MM.f = function (index) {
+  /** @type {number} */ var x = index;
+  return '';
+};
+
+
