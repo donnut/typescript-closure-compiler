@@ -8,7 +8,7 @@
     "typecheck": "git submodule update && cp emitter.ts typescript/src/compiler/emitter.ts && cd typescript && ../node_modules/jake/bin/cli.js local"
   },
   "bin": {
-    "tscc": "./typescript-closure-compiler"
+    "tscc": "./tscc"
   },
   "dependencies": {
     "typescript": "0.9.1-1"

@@ -1,0 +1,6 @@
+.DS_Store
+/.gitmodules
+/emitter.js
+/node_modules/
+/test/
+/typescript/

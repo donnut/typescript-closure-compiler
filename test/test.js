@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
 var child_process = require('child_process');
-var tsc = path.resolve(__dirname, '../typescript-closure-compiler.js');
+var tsc = path.resolve(__dirname, '../tscc');
 
 fs.readdirSync(__dirname).sort().forEach(function(test) {
   if (!/\.ts$/.test(test)) {

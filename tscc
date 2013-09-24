@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var TSC = './node_modules/typescript/bin/tsc.js';
+var TSC = require('path').resolve(__dirname, 'node_modules/typescript/bin/tsc.js');
 
 eval(require('fs')
   .readFileSync(TSC, 'utf8')
@@ -8,7 +8,7 @@ eval(require('fs')
   .replace(/\btsc\b/g, 'tscc'));
 
 eval(require('fs')
-  .readFileSync('./emitter.js', 'utf8'));
+  .readFileSync(require('path').resolve(__dirname, 'emitter.js'), 'utf8'));
 
 TypeScript.InterfaceDeclaration.prototype.shouldEmit = function() {
   return true;
@@ -38,7 +38,7 @@ TypeScript.ForInStatement.prototype.emitWorker = function(emitter) {
   emitter.emitForInStatement(this);
 };
 
-process.mainModule.filename = require('path').resolve(TSC);
+process.mainModule.filename = TSC;
 TypeScript.Indenter.indentStepString = '  ';
 TypeScript.Indenter.indentStep = 2;
 batch.batchCompile();
