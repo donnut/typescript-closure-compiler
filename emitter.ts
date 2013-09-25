@@ -625,8 +625,8 @@ module TypeScript {
 
       if (funcDecl.isConstructor) {
         this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(this.thisClassNode),
-          Emitter.joinJSDocComments(Emitter.getUserComments(funcDecl), Emitter.getJSDocForFunctionDeclaration(funcDecl))));
-        this.emitFullSymbolVariableStatement(this.thisClassNode.symbol);
+          Emitter.joinJSDocComments(Emitter.getUserComments(funcDecl), this.getJSDocForFunctionDeclaration(funcDecl))));
+        this.emitFullSymbolVariableStatement(this.getSymbolForAST(this.thisClassNode));
         this.writeToOutput(' = ');
         needSemicolon = true;
       }
@@ -634,8 +634,8 @@ module TypeScript {
       else if (printName) {
         var id = funcDecl.getNameText();
         if (id && !funcDecl.isAccessor()) {
-          this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(funcDecl), Emitter.getJSDocForFunctionDeclaration(funcDecl)));
-          this.emitFullSymbolVariableStatement(funcDecl.symbol);
+          this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(funcDecl), this.getJSDocForFunctionDeclaration(funcDecl)));
+          this.emitFullSymbolVariableStatement(this.getSymbolForAST(funcDecl));
           this.writeToOutput(' = ');
           needSemicolon = true;
         }
@@ -892,7 +892,7 @@ module TypeScript {
       var isWholeFile = TypeScript.hasFlag(moduleDecl.getModuleFlags(), TypeScript.ModuleFlags.IsWholeFile);
 
       this.recordSourceMappingStart(moduleDecl);
-      this.emitFullSymbolVariableStatement(moduleDecl.symbol);
+      this.emitFullSymbolVariableStatement(this.getSymbolForAST(moduleDecl));
       this.writeLineToOutput(' = {};');
       if (!isWholeFile) this.recordSourceMappingNameStart(this.moduleName);
 
@@ -1043,7 +1043,7 @@ module TypeScript {
     }
 
     public emitVariableDeclarator(varDecl: VariableDeclarator) {
-      var symbol = this.semanticInfoChain.getSymbolForAST(varDecl, this.document.fileName);
+      var symbol = this.getSymbolForAST(varDecl);
       var parentSymbol = symbol ? symbol.getContainer() : null;
       var parentKind = parentSymbol ? parentSymbol.kind : TypeScript.PullElementKind.None;
 
@@ -1065,7 +1065,7 @@ module TypeScript {
         this.writeToOutput(varDecl.id.actualText);
         this.recordSourceMappingEnd(varDecl.id);
       } else {
-        this.emitFullSymbolVariableStatement(varDecl.symbol);
+        this.emitFullSymbolVariableStatement(symbol);
       }
 
       var hasInitializer = (varDecl.init !== null);
@@ -1632,7 +1632,7 @@ module TypeScript {
       else {
         this.emitIndent();
         this.recordSourceMappingStart(funcDecl);
-        this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(funcDecl), Emitter.getJSDocForFunctionDeclaration(funcDecl)));
+        this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(funcDecl), this.getJSDocForFunctionDeclaration(funcDecl)));
         this.writeToOutput(Emitter.getFullSymbolName(classSymbol) + ".prototype." + funcDecl.getNameText() + " = ");
 
         var tempFnc = this.thisFunctionDeclaration;
@@ -1665,7 +1665,7 @@ module TypeScript {
       if (hasBaseClass) {
         baseNameDecl = classDecl.extendsList.members[0];
         baseName = baseNameDecl.nodeType() === TypeScript.NodeType.InvocationExpression ? (<InvocationExpression>baseNameDecl).target : baseNameDecl;
-        this.thisBaseName = Emitter.getFullSymbolName(baseName.symbol);
+        this.thisBaseName = Emitter.getFullSymbolName(this.getSymbolForAST(baseName));
       }
 
       var constrDecl = classDecl.constructorDecl;
@@ -1679,9 +1679,9 @@ module TypeScript {
       else {
         this.recordSourceMappingStart(classDecl);
         // default constructor
-        this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(classDecl), Emitter.getJSDocForConstructor(classDecl)));
+        this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(classDecl), this.getJSDocForConstructor(classDecl)));
         this.indenter.increaseIndent();
-        this.emitFullSymbolVariableStatement(classDecl.symbol);
+        this.emitFullSymbolVariableStatement(this.getSymbolForAST(classDecl));
         this.writeLineToOutput(" = function () {");
         this.recordSourceMappingNameStart("constructor");
         if (hasBaseClass) {
@@ -1706,7 +1706,7 @@ module TypeScript {
       if (hasBaseClass) {
         this.writeLineToOutput("");
         this.emitIndent();
-        this.writeLineToOutput("__extends(" + Emitter.getFullSymbolName(classDecl.symbol) + ", " + this.thisBaseName + ");");
+        this.writeLineToOutput("__extends(" + Emitter.getFullSymbolName(this.getSymbolForAST(classDecl)) + ", " + this.thisBaseName + ");");
       }
 
       this.emitClassMembers(classDecl);
@@ -1734,7 +1734,7 @@ module TypeScript {
             this.emitSpaceBetweenConstructs(lastEmittedMember, fn);
 
             if (!TypeScript.hasFlag(fn.getFunctionFlags(), TypeScript.FunctionFlags.Static)) {
-              this.emitPrototypeMember(fn, classDecl.symbol);
+              this.emitPrototypeMember(fn, this.getSymbolForAST(classDecl));
             }
             else { // static functions
               var tempFnc = this.thisFunctionDeclaration;
@@ -1746,8 +1746,8 @@ module TypeScript {
               else {
                 this.emitIndent();
                 this.recordSourceMappingStart(fn);
-                this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(fn), Emitter.getJSDocForFunctionDeclaration(fn)));
-                this.emitFullSymbolVariableStatement(fn.symbol);
+                this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(fn), this.getJSDocForFunctionDeclaration(fn)));
+                this.emitFullSymbolVariableStatement(this.getSymbolForAST(fn));
                 this.writeToOutput(' = ');
                 this.emitInnerFunction(fn, /*printName:*/ false, /*includePreComments:*/ false);
                 this.writeLineToOutput(";");
@@ -1773,8 +1773,8 @@ module TypeScript {
 
             this.emitIndent();
             this.recordSourceMappingStart(varDecl);
-            this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(varDecl), Emitter.getJSDocForType(varDecl.symbol.type)));
-            this.emitFullSymbolVariableStatement(varDecl.symbol);
+            this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(varDecl), Emitter.getJSDocForType(this.getSymbolForAST(varDecl).type)));
+            this.emitFullSymbolVariableStatement(this.getSymbolForAST(varDecl));
 
             if (varDecl.init !== null) {
               this.writeToOutput(' = ');
@@ -1893,9 +1893,17 @@ module TypeScript {
       throw e;
     }
 
+    private getDeclForAST(ast: AST): PullDecl {
+      return this.semanticInfoChain.getDeclForAST(ast, this.document.fileName);
+    }
+
+    private getSymbolForAST(ast: AST): PullSymbol {
+      return this.semanticInfoChain.getSymbolForAST(ast, this.document.fileName);
+    }
+
     public emitUnaryExpression(ast: UnaryExpression, emitWorker: (emitter: Emitter) => void) {
       if (ast.nodeType() === TypeScript.NodeType.CastExpression) {
-        this.emitInlineTypeComment(ast.symbol.type);
+        this.emitInlineTypeComment(this.getSymbolForAST(ast).type);
         this.writeToOutput('(');
         ast.operand.emit(this);
         this.writeToOutput(')');
@@ -1966,8 +1974,8 @@ module TypeScript {
     }
 
     public emitInterfaceDeclaration(interfaceDecl: InterfaceDeclaration) {
-      this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(interfaceDecl), Emitter.getJSDocForInterface(interfaceDecl)));
-      this.emitFullSymbolVariableStatement(interfaceDecl.symbol);
+      this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(interfaceDecl), this.getJSDocForInterface(interfaceDecl)));
+      this.emitFullSymbolVariableStatement(this.getSymbolForAST(interfaceDecl));
       this.writeLineToOutput(' = function () {');
       this.emitIndent();
       this.writeLineToOutput('};');
@@ -1979,14 +1987,15 @@ module TypeScript {
         var memberDecl = interfaceDecl.members.members[i];
 
         if (memberDecl.nodeType() === TypeScript.NodeType.VariableDeclarator) {
+          var symbol: PullSymbol = this.getSymbolForAST(memberDecl);
           this.writeLineToOutput('');
-          this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(memberDecl), Emitter.getJSDocForType(memberDecl.symbol.type)));
-          this.writeLineToOutput(Emitter.getFullSymbolName(interfaceDecl.symbol) + '.prototype.' + memberDecl.symbol.name + ';');
+          this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(memberDecl), Emitter.getJSDocForType(symbol.type)));
+          this.writeLineToOutput(Emitter.getFullSymbolName(this.getSymbolForAST(interfaceDecl)) + '.prototype.' + symbol.name + ';');
         }
 
         else if (memberDecl.nodeType() === TypeScript.NodeType.FunctionDeclaration) {
           this.writeLineToOutput('');
-          this.emitPrototypeMember(<FunctionDeclaration>memberDecl, interfaceDecl.symbol);
+          this.emitPrototypeMember(<FunctionDeclaration>memberDecl, this.getSymbolForAST(interfaceDecl));
         }
       }
     }
@@ -2060,30 +2069,29 @@ module TypeScript {
       return ['@type {' + Emitter.formatJSDocType(type) + '}'];
     }
 
-    private static getJSDocForArguments(args: Parameter[]): string[] {
-      return args.map(arg => {
-        var symbol: PullSymbol = arg.decl.getSymbol();
+    private static getJSDocForArguments(symbols: PullSymbol[]): string[] {
+      return symbols.map(symbol => {
         var type: string = Emitter.formatJSDocType(symbol.type);
-        if (arg.isOptional) type += '=';
+        if (symbol.isOptional) type += '=';
         return '@param {' + type + '} ' + symbol.name;
       });
     }
 
-    private static getJSDocForConstructor(classDecl: ClassDeclaration): string[] {
+    private getJSDocForConstructor(classDecl: ClassDeclaration): string[] {
       return ['@constructor', '@struct'].concat(
-        Emitter.getJSDocForExtends(classDecl.extendsList),
-        Emitter.getJSDocForImplements(classDecl.implementsList));
+        this.getJSDocForExtends(classDecl.extendsList),
+        this.getJSDocForImplements(classDecl.implementsList));
     }
 
-    private static getJSDocForExtends(extendsList: ASTList): string[] {
+    private getJSDocForExtends(extendsList: ASTList): string[] {
       return extendsList !== null
-        ? extendsList.members.map(member => '@extends {' + Emitter.getFullSymbolName(member.symbol) + '}')
+        ? extendsList.members.map(member => '@extends {' + Emitter.getFullSymbolName(this.getSymbolForAST(member)) + '}')
         : Emitter.EMPTY_STRING_LIST;
     }
 
-    private static getJSDocForImplements(implementsList: ASTList): string[] {
+    private getJSDocForImplements(implementsList: ASTList): string[] {
       return implementsList !== null
-        ? implementsList.members.map(member => '@implements {' + Emitter.getFullSymbolName(member.symbol) + '}')
+        ? implementsList.members.map(member => '@implements {' + Emitter.getFullSymbolName(this.getSymbolForAST(member)) + '}')
         : Emitter.EMPTY_STRING_LIST;
     }
 
@@ -2091,18 +2099,19 @@ module TypeScript {
       return ['@returns {' + Emitter.formatJSDocType(returnType) + '}'];
     }
 
-    private static getJSDocForFunctionDeclaration(funcDecl: FunctionDeclaration): string[] {
-      var signature: PullSignatureSymbol = funcDecl.symbol.type.getCallSignatures()[0];
-      return Emitter.getJSDocForArguments(<Parameter[]>funcDecl.arguments.members).concat(
+    private getJSDocForFunctionDeclaration(funcDecl: FunctionDeclaration): string[] {
+      var type: PullTypeSymbol = this.getSymbolForAST(funcDecl).type;
+      var signature: PullSignatureSymbol = type.getCallSignatures().concat(type.getConstructSignatures())[0];
+      return Emitter.getJSDocForArguments(signature.parameters).concat(
         funcDecl.isConstructor
-          ? Emitter.getJSDocForConstructor(funcDecl.classDecl)
+          ? this.getJSDocForConstructor(funcDecl.classDecl)
           : signature.returnType !== null && signature.returnType.getTypeName() !== 'void'
             ? Emitter.getJSDocForReturnType(signature.returnType)
             : Emitter.EMPTY_STRING_LIST);
     }
 
-    private static getJSDocForInterface(interfaceDecl: InterfaceDeclaration) {
-      return ['@interface'].concat(Emitter.getJSDocForExtends(interfaceDecl.extendsList));
+    private getJSDocForInterface(interfaceDecl: InterfaceDeclaration) {
+      return ['@interface'].concat(this.getJSDocForExtends(interfaceDecl.extendsList));
     }
 
     private static joinJSDocComments(first: string[], second: string[]): string[] {
@@ -2111,7 +2120,7 @@ module TypeScript {
 
     private emitFullSymbolVariableStatement(symbol: PullSymbol) {
       var name: string = Emitter.getFullSymbolName(symbol);
-      var isLocalVariable: boolean = this.thisFunctionDeclaration !== null && this.thisFunctionDeclaration.decl.getChildDecls().some(decl => decl.symbol === symbol);
+      var isLocalVariable: boolean = this.thisFunctionDeclaration !== null && this.getDeclForAST(this.thisFunctionDeclaration).getChildDecls().some(decl => decl.symbol === symbol);
       this.writeToOutput(isLocalVariable || name.indexOf('.') < 0 ? 'var ' + symbol.name : name);
     }
 

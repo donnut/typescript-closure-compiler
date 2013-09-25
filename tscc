@@ -7,38 +7,8 @@ eval(require('fs')
   .replace(/batch\.batchCompile\(\);\s*$/, '')
   .replace(/\btsc\b/g, 'tscc'));
 
-eval(require('fs')
-  .readFileSync(require('path').resolve(__dirname, 'emitter.js'), 'utf8'));
-
-TypeScript.InterfaceDeclaration.prototype.shouldEmit = function() {
-  return true;
-};
-
-TypeScript.InterfaceDeclaration.prototype.emit = function(emitter) {
-  emitter.recordSourceMappingStart(this);
-  emitter.emitInterfaceDeclaration(this);
-  emitter.recordSourceMappingEnd(this);
-};
-
-TypeScript.UnaryExpression.prototype.emitWorker = function(emitWorker) {
-  return function(emitter) {
-    emitter.emitUnaryExpression(this, emitWorker);
-  };
-}(TypeScript.UnaryExpression.prototype.emitWorker);
-
-TypeScript.VariableStatement.prototype.emitWorker = function(emitter) {
-  emitter.emitVariableStatement(this);
-};
-
-TypeScript.ForStatement.prototype.emitWorker = function(emitter) {
-  emitter.emitForStatement(this);
-};
-
-TypeScript.ForInStatement.prototype.emitWorker = function(emitter) {
-  emitter.emitForInStatement(this);
-};
+eval(require('fs').readFileSync(require('path').resolve(__dirname, 'emitter.js'), 'utf8'));
+eval(require('fs').readFileSync(require('path').resolve(__dirname, 'patches.js'), 'utf8'));
 
 process.mainModule.filename = TSC;
-TypeScript.Indenter.indentStepString = '  ';
-TypeScript.Indenter.indentStep = 2;
 batch.batchCompile();
