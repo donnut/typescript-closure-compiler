@@ -1144,6 +1144,14 @@ module TypeScript {
                 this.writeToOutput(".");
               }
             }
+            else if (TypeScript.PullHelpers.symbolIsModule(pullSymbolContainer)) {
+              // TODO: Wow all of this other code is a mess, try to simplify
+              // everything else to just a single call to getFullSymbolName()
+              this.writeToOutput(Emitter.getFullSymbolName(pullSymbol));
+              this.recordSourceMappingEnd(name);
+              this.emitComments(name, false);
+              return;
+            }
             else if (TypeScript.PullHelpers.symbolIsModule(pullSymbolContainer) || pullSymbolContainerKind === TypeScript.PullElementKind.Enum ||
                  pullSymbolContainer.hasFlag(TypeScript.PullElementFlags.InitializedModule | TypeScript.PullElementFlags.InitializedEnum)) {
               // If property or, say, a constructor being invoked locally within the module of its definition
