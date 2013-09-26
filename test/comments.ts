@@ -27,3 +27,14 @@ interface C {
   // c(a: number): boolean
   c(a: number): boolean;
 }
+
+// module M
+module M {
+  // enum E
+  enum E {
+    // enum E.A
+    A = 100,
+    // enum E.B
+    B
+  }
+}

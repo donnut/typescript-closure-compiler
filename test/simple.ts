@@ -1,3 +1,5 @@
+enum Foo { ABC, XYZ = 100 }
+
 var v = 0;
 var v1 = false, v2 = 0;
 
@@ -40,6 +42,8 @@ function f(index: number): string {
 }
 
 module M {
+  enum Foo { ABC, XYZ = 100 }
+
   var v = 0;
   var v1 = false, v2 = 0;
 
@@ -70,6 +74,8 @@ module M {
   }
 
   module MM {
+    enum Foo { ABC, XYZ = 100 }
+
     var v = 0;
     var v1 = false, v2 = 0;
 

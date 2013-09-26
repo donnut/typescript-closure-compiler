@@ -8,6 +8,15 @@ var __extends = function (d, b) {
   __.prototype = b.prototype;
   d.prototype = new __();
 };
+/**
+ * @enum {number}
+ */
+var Foo = {
+  ABC: 0,
+  XYZ: 100
+};
+
+
 /** @type {number} */ var v = 0;
 /** @type {boolean} */ var v1 = false;
 /** @type {number} */ var v2 = 0;
@@ -102,6 +111,15 @@ var f = function (index) {
 };
 
 var M = {};
+/**
+ * @enum {number}
+ */
+M.Foo = {
+  ABC: 0,
+  XYZ: 100
+};
+
+
 /** @type {number} */ M.v = 0;
 /** @type {boolean} */ M.v1 = false;
 /** @type {number} */ M.v2 = 0;
@@ -182,6 +200,15 @@ M.f = function (index) {
 };
 
 M.MM = {};
+/**
+ * @enum {number}
+ */
+M.MM.Foo = {
+  ABC: 0,
+  XYZ: 100
+};
+
+
 /** @type {number} */ M.MM.v = 0;
 /** @type {boolean} */ M.MM.v1 = false;
 /** @type {number} */ M.MM.v2 = 0;

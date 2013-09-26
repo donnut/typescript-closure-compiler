@@ -10,7 +10,7 @@ var __extends = function (d, b) {
 };
 /**
  * class A implements C
- * 
+ *
  * @constructor
  * @struct
  * @implements {C}
@@ -21,7 +21,7 @@ var A = function () {
 };
 /**
  * c(a: number): boolean
- * 
+ *
  * @param {number} a
  * @returns {boolean}
  */
@@ -31,7 +31,7 @@ A.prototype.c = function (a) {
 
 /**
  * static d(a: number): boolean
- * 
+ *
  * @param {number} a
  * @returns {boolean}
  */
@@ -40,7 +40,7 @@ A.d = function (a) {
 };
 /**
  * static b: number
- * 
+ *
  * @type {number}
  */
 A.b;
@@ -48,9 +48,9 @@ A.b;
 
 /**
  * class B extends A
- * 
+ *
  * constructor()
- * 
+ *
  * @constructor
  * @struct
  * @extends {A}
@@ -64,7 +64,7 @@ __extends(B, A);
 
 /**
  * interface A
- * 
+ *
  * @interface
  */
 var C = function () {
@@ -72,17 +72,37 @@ var C = function () {
 
 /**
  * a: number
- * 
+ *
  * @type {number}
  */
 C.prototype.a;
 
 /**
  * c(a: number): boolean
- * 
+ *
  * @param {number} a
  * @returns {boolean}
  */
 C.prototype.c = function (a) {
 };
+
+
+// module M
+/**
+ * module M
+ */
+var M = {};
+// enum E
+/**
+ * enum E
+ *
+ * @enum {number}
+ */
+M.E = {
+  // enum E.A
+  A: 100,
+  // enum E.B
+  B: 101
+};
+
 
