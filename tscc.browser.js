@@ -56712,11 +56712,11 @@ var TypeScript;
         };
 
         Emitter.prototype.getDeclForAST = function (ast) {
-            return this.semanticInfoChain.getDeclForAST(ast, this.document.fileName);
+            return this.semanticInfoChain.getDeclForAST(ast, this.document.fileName) || null;
         };
 
         Emitter.prototype.getSymbolForAST = function (ast) {
-            return this.semanticInfoChain.getSymbolForAST(ast, this.document.fileName);
+            return this.semanticInfoChain.getSymbolForAST(ast, this.document.fileName) || null;
         };
 
         Emitter.prototype.emitUnaryExpression = function (ast, emitWorker) {
