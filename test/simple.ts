@@ -4,8 +4,8 @@ var v1 = false, v2 = 0;
 class A {
   a: number;
   static b: number;
-  c(a: number): boolean { return false; }
-  static d(a: number): boolean { return false; }
+  c(a: number): boolean { return a === v; }
+  static d(a: number): boolean { return a === v; }
   e = 0;
   static f = 0;
 }
@@ -46,8 +46,8 @@ module M {
   class A {
     a: number;
     static b: number;
-    c(a: number): boolean { return false; }
-    static d(a: number): boolean { return false; }
+    c(a: number): boolean { return a === v; }
+    static d(a: number): boolean { return a === v; }
     e = 0;
     static f = 0;
   }
@@ -76,8 +76,8 @@ module M {
     class A {
       a: number;
       static b: number;
-      c(a: number): boolean { return false; }
-      static d(a: number): boolean { return false; }
+      c(a: number): boolean { return a === v; }
+      static d(a: number): boolean { return a === v; }
       e = 0;
       static f = 0;
     }

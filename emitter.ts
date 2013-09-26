@@ -968,33 +968,6 @@ module TypeScript {
       }
       this.setContainer(temp);
       this.thisFunctionDeclaration = tempFnc;
-
-      if (!TypeScript.hasFlag(funcDecl.getFunctionFlags(), TypeScript.FunctionFlags.Signature)) {
-        var pullFunctionDecl = this.semanticInfoChain.getDeclForAST(funcDecl, this.document.fileName);
-        if (TypeScript.hasFlag(funcDecl.getFunctionFlags(), TypeScript.FunctionFlags.Static)) {
-          if (this.thisClassNode) {
-            this.writeLineToOutput("");
-            if (funcDecl.isAccessor()) {
-              this.emitPropertyAccessor(funcDecl, this.thisClassNode.name.actualText, false);
-            }
-            else {
-              this.emitIndent();
-              this.recordSourceMappingStart(funcDecl);
-              this.writeToOutput(this.thisClassNode.name.actualText + "." + funcName + " = " + funcName + ";");
-              this.recordSourceMappingEnd(funcDecl);
-            }
-          }
-        }
-        else if ((this.emitState.container === EmitContainer.Module || this.emitState.container === EmitContainer.DynamicModule) &&
-            TypeScript.hasFlag(pullFunctionDecl.flags, TypeScript.PullElementFlags.Exported)) {
-          this.writeLineToOutput("");
-          this.emitIndent();
-          var modName = this.emitState.container === EmitContainer.Module ? this.moduleName : "exports";
-          this.recordSourceMappingStart(funcDecl);
-          this.writeToOutput(modName + "." + funcName + " = " + funcName + ";");
-          this.recordSourceMappingEnd(funcDecl);
-        }
-      }
     }
 
     public emitAmbientVarDecl(varDecl: VariableDeclarator) {

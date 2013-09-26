@@ -25,14 +25,14 @@ var A = function () {
  * @returns {boolean}
  */
 A.prototype.c = function (a) {
-  return false;
+  return a === v;
 };
 /**
  * @param {number} a
  * @returns {boolean}
  */
 A.d = function (a) {
-  return false;
+  return a === v;
 };
 /**
  * @type {number}
@@ -119,14 +119,14 @@ M.A = function () {
  * @returns {boolean}
  */
 M.A.prototype.c = function (a) {
-  return false;
+  return a === M.v;
 };
 /**
  * @param {number} a
  * @returns {boolean}
  */
 M.A.d = function (a) {
-  return false;
+  return a === M.v;
 };
 /**
  * @type {number}
@@ -199,14 +199,14 @@ M.MM.A = function () {
  * @returns {boolean}
  */
 M.MM.A.prototype.c = function (a) {
-  return false;
+  return a === M.MM.v;
 };
 /**
  * @param {number} a
  * @returns {boolean}
  */
 M.MM.A.d = function (a) {
-  return false;
+  return a === M.MM.v;
 };
 /**
  * @type {number}
