@@ -4,7 +4,7 @@
   "description": "Patches the TypeScript compiler to generate JSDoc annotations",
   "repository": "https://github.com/evanw/typescript-closure-compiler.git",
   "scripts": {
-    "install": "node_modules/typescript/bin/tsc emitter.ts 2> /dev/null || true; node build.js > tscc.browser.js",
+    "install": "`node -e 'path = require(\"path\"); process.stdout.write(path.dirname(require.resolve(\"typescript\")))'`/tsc emitter.ts 2> /dev/null || true; node build.js > tscc.browser.js",
     "typecheck": "git submodule update && cp emitter.ts typescript/src/compiler/emitter.ts && cd typescript && ../node_modules/jake/bin/cli.js local"
   },
   "bin": {

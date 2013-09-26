@@ -1,11 +1,12 @@
 var fs = require('fs');
 var path = require('path');
+var typescript = require.resolve('typescript');
 var code = '';
 
-code += fs.readFileSync(path.resolve(__dirname, 'node_modules/typescript/bin/typescript.js'), 'utf8');
-code += fs.readFileSync(path.resolve(__dirname, 'emitter.js'), 'utf8');
-code += fs.readFileSync(path.resolve(__dirname, 'patches.js'), 'utf8');
-code += 'lib_d_ts = ' + JSON.stringify(fs.readFileSync(path.resolve(__dirname, 'node_modules/typescript/bin/lib.d.ts'), 'utf8')) + ';';
+code += fs.readFileSync(typescript, 'utf8');
+code += fs.readFileSync(path.join(__dirname, 'emitter.js'), 'utf8');
+code += fs.readFileSync(path.join(__dirname, 'patches.js'), 'utf8');
+code += 'lib_d_ts = ' + JSON.stringify(fs.readFileSync(path.join(path.dirname(typescript), 'lib.d.ts'), 'utf8')) + ';';
 
 function compile(source) {
   function processDiagnostics(diagnostics) {

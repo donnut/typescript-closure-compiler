@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 
-var TSC = require('path').resolve(__dirname, 'node_modules/typescript/bin/tsc.js');
+var fs = require('fs');
+var path = require('path');
+var tsc = path.join(path.dirname(require.resolve('typescript')), 'tsc.js');
 
-eval(require('fs')
-  .readFileSync(TSC, 'utf8')
+eval(fs
+  .readFileSync(tsc, 'utf8')
   .replace(/batch\.batchCompile\(\);\s*$/, '')
   .replace(/\btsc\b/g, 'tscc'));
 
-eval(require('fs').readFileSync(require('path').resolve(__dirname, 'emitter.js'), 'utf8'));
-eval(require('fs').readFileSync(require('path').resolve(__dirname, 'patches.js'), 'utf8'));
+eval(fs.readFileSync(path.resolve(__dirname, 'emitter.js'), 'utf8'));
+eval(fs.readFileSync(path.resolve(__dirname, 'patches.js'), 'utf8'));
 
-process.mainModule.filename = TSC;
+process.mainModule.filename = tsc;
 batch.batchCompile();
