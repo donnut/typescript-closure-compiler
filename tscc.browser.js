@@ -55439,31 +55439,45 @@ var TypeScript;
         };
 
         Emitter.prototype.emitCall = function (callNode, target, args) {
-            if (!this.emitSuperCall(callNode)) {
-                if (target.nodeType() === TypeScript.NodeType.FunctionDeclaration) {
-                    this.writeToOutput("(");
-                }
-                if (callNode.target.nodeType() === TypeScript.NodeType.SuperExpression && this.emitState.container === EmitContainer.Constructor) {
-                    this.writeToOutput(this.thisBaseName + ".call");
-                } else {
-                    this.emitJavascript(target, false);
-                }
-                if (target.nodeType() === TypeScript.NodeType.FunctionDeclaration) {
-                    this.writeToOutput(")");
-                }
-                this.recordSourceMappingStart(args);
+            if (this.emitSuperCall(callNode)) {
+                return;
+            }
+
+            // Check if the target needs a cast because it has a more specific call
+            // signature than the default one like document.createElement('canvas')
+            var returnType = this.getSymbolForAST(callNode);
+            var symbol = this.getSymbolForAST(callNode.target);
+            var emitCast = returnType !== null && symbol !== null && symbol.type.getCallSignatures().length > 1;
+            if (emitCast) {
+                this.emitInlineTypeComment(returnType.type);
+                this.writeToOutput('(');
+            }
+            if (target.nodeType() === TypeScript.NodeType.FunctionDeclaration) {
                 this.writeToOutput("(");
-                if (callNode.target.nodeType() === TypeScript.NodeType.SuperExpression && this.emitState.container === EmitContainer.Constructor) {
-                    this.writeToOutput("this");
-                    if (args && args.members.length) {
-                        this.writeToOutput(", ");
-                    }
-                }
-                this.emitCommaSeparatedList(args);
-                this.recordSourceMappingStart(callNode.closeParenSpan);
+            }
+            if (callNode.target.nodeType() === TypeScript.NodeType.SuperExpression && this.emitState.container === EmitContainer.Constructor) {
+                this.writeToOutput(this.thisBaseName + ".call");
+            } else {
+                this.emitJavascript(target, false);
+            }
+            if (target.nodeType() === TypeScript.NodeType.FunctionDeclaration) {
                 this.writeToOutput(")");
-                this.recordSourceMappingEnd(callNode.closeParenSpan);
-                this.recordSourceMappingEnd(args);
+            }
+            this.recordSourceMappingStart(args);
+            this.writeToOutput("(");
+            if (callNode.target.nodeType() === TypeScript.NodeType.SuperExpression && this.emitState.container === EmitContainer.Constructor) {
+                this.writeToOutput("this");
+                if (args && args.members.length) {
+                    this.writeToOutput(", ");
+                }
+            }
+            this.emitCommaSeparatedList(args);
+            this.recordSourceMappingStart(callNode.closeParenSpan);
+            this.writeToOutput(")");
+            this.recordSourceMappingEnd(callNode.closeParenSpan);
+            this.recordSourceMappingEnd(args);
+            if (emitCast) {
+                this.writeToOutput(')');
             }
         };
 
