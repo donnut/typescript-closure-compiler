@@ -55764,17 +55764,29 @@ var TypeScript;
             var isWholeFile = TypeScript.hasFlag(moduleDecl.getModuleFlags(), TypeScript.ModuleFlags.IsWholeFile);
 
             this.recordSourceMappingStart(moduleDecl);
-            this.emitFullSymbolVariableStatement(this.getSymbolForAST(moduleDecl));
-            this.writeLineToOutput(' = {};');
-            if (!isWholeFile)
-                this.recordSourceMappingNameStart(this.moduleName);
 
-            this.emitModuleElements(moduleDecl.members);
+            if (pullDecl.kind === TypeScript.PullElementKind.Enum) {
+                var startLine = true;
+                this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(moduleDecl), Emitter.getJSDocForEnum(moduleDecl)));
+                this.emitFullSymbolVariableStatement(this.getSymbolForAST(moduleDecl));
+                this.writeLineToOutput(' = {');
+                this.indenter.increaseIndent();
+                this.emitCommaSeparatedList(moduleDecl.members, startLine);
+                this.indenter.decreaseIndent();
+                this.emitIndent();
+                this.writeLineToOutput('};');
+            } else {
+                this.emitJSDocComment(Emitter.getUserComments(moduleDecl));
+                this.emitFullSymbolVariableStatement(this.getSymbolForAST(moduleDecl));
+                this.writeLineToOutput(' = {};');
+                if (!isWholeFile)
+                    this.recordSourceMappingNameStart(this.moduleName);
+                this.emitModuleElements(moduleDecl.members);
+                if (!isWholeFile)
+                    this.recordSourceMappingNameEnd();
+            }
 
-            if (!isWholeFile)
-                this.recordSourceMappingNameEnd();
             this.recordSourceMappingEnd(moduleDecl);
-
             this.setContainer(temp);
             this.moduleName = svModuleName;
 
@@ -55782,19 +55794,11 @@ var TypeScript;
         };
 
         Emitter.prototype.emitEnumElement = function (varDecl) {
-            // <EnumName>[<EnumName>["<MemberName>"] = <MemberValue>] = "<MemberName>";
             this.emitComments(varDecl, true);
             this.recordSourceMappingStart(varDecl);
-            var name = varDecl.id.actualText;
-            var quoted = isQuoted(name);
-            this.writeToOutput(this.moduleName);
-            this.writeToOutput('[');
-            this.writeToOutput(this.moduleName);
-            this.writeToOutput('[');
-            this.writeToOutput(quoted ? name : '"' + name + '"');
-            this.writeToOutput('] = ');
+            this.writeToOutput(varDecl.id.actualText + ': ');
 
-            if (varDecl.init) {
+            if (varDecl.init !== null) {
                 varDecl.init.emit(this);
             } else if (varDecl.constantValue !== null) {
                 this.writeToOutput(varDecl.constantValue.toString());
@@ -55802,11 +55806,8 @@ var TypeScript;
                 this.writeToOutput("null");
             }
 
-            this.writeToOutput('] = ');
-            this.writeToOutput(quoted ? name : '"' + name + '"');
             this.recordSourceMappingEnd(varDecl);
             this.emitComments(varDecl, false);
-            this.writeToOutput(';');
         };
 
         Emitter.prototype.emitIndex = function (operand1, operand2) {
@@ -56898,6 +56899,10 @@ var TypeScript;
             return ['@returns {' + Emitter.formatJSDocType(returnType) + '}'];
         };
 
+        Emitter.getJSDocForEnum = function (moduleDecl) {
+            return ['@enum {number}'];
+        };
+
         Emitter.prototype.getJSDocForFunctionDeclaration = function (funcDecl) {
             var type = this.getSymbolForAST(funcDecl).type;
             var signature = type.getCallSignatures().concat(type.getConstructSignatures())[0];
@@ -56925,7 +56930,7 @@ var TypeScript;
             if (lines.length === 0)
                 return;
             lines = ['/**'].concat(lines.map(function (line) {
-                return ' * ' + line;
+                return ' ' + ('* ' + line).trim();
             }), [' */']);
             lines.forEach(function (line, i) {
                 if (i)
