@@ -64,13 +64,13 @@ module TypeScript {
     public decodeSourceMapOptions(document: Document, jsFilePath: string, oldSourceMapSourceInfo?: SourceMapSourceInfo): SourceMapSourceInfo {
       var sourceMapSourceInfo = new TypeScript.SourceMapSourceInfo(oldSourceMapSourceInfo);
 
-      var tsFilePath = switchToForwardSlashes(document.fileName);
+      var tsFilePath = TypeScript.switchToForwardSlashes(document.fileName);
 
       // Decode mapRoot and sourceRoot
       if (!oldSourceMapSourceInfo) {
         // Js File Name = pretty name of js file
         var prettyJsFileName = TypeScript.getPrettyName(jsFilePath, false, true);
-        var prettyMapFileName = prettyJsFileName + SourceMapper.MapFileExtension;
+        var prettyMapFileName = prettyJsFileName + TypeScript.SourceMapper.MapFileExtension;
         sourceMapSourceInfo.jsFileName = prettyJsFileName;
 
         // Figure out sourceMapPath and sourceMapDirectory
@@ -78,33 +78,33 @@ module TypeScript {
           if (this.outputMany || document.script.topLevelMod) {
             var sourceMapPath = tsFilePath.replace(this.commonDirectoryPath, "");
             sourceMapPath = this.compilationSettings.mapRoot + sourceMapPath;
-            sourceMapPath = TypeScriptCompiler.mapToJSFileName(sourceMapPath, false) + SourceMapper.MapFileExtension;
+            sourceMapPath = TypeScript.TypeScriptCompiler.mapToJSFileName(sourceMapPath, false) + TypeScript.SourceMapper.MapFileExtension;
             sourceMapSourceInfo.sourceMapPath = sourceMapPath;
 
-            if (isRelative(sourceMapSourceInfo.sourceMapPath)) {
+            if (TypeScript.isRelative(sourceMapSourceInfo.sourceMapPath)) {
               sourceMapPath = this.commonDirectoryPath + sourceMapSourceInfo.sourceMapPath;
             }
-            sourceMapSourceInfo.sourceMapDirectory = getRootFilePath(sourceMapPath);
+            sourceMapSourceInfo.sourceMapDirectory = TypeScript.getRootFilePath(sourceMapPath);
           } else {
             sourceMapSourceInfo.sourceMapPath = this.compilationSettings.mapRoot + prettyMapFileName;
             sourceMapSourceInfo.sourceMapDirectory = this.compilationSettings.mapRoot;
-            if (isRelative(sourceMapSourceInfo.sourceMapDirectory)) {
-              sourceMapSourceInfo.sourceMapDirectory = getRootFilePath(jsFilePath) + this.compilationSettings.mapRoot;
+            if (TypeScript.isRelative(sourceMapSourceInfo.sourceMapDirectory)) {
+              sourceMapSourceInfo.sourceMapDirectory = TypeScript.getRootFilePath(jsFilePath) + this.compilationSettings.mapRoot;
             }
           }
         } else {
           sourceMapSourceInfo.sourceMapPath = prettyMapFileName;
-          sourceMapSourceInfo.sourceMapDirectory = getRootFilePath(jsFilePath);
+          sourceMapSourceInfo.sourceMapDirectory = TypeScript.getRootFilePath(jsFilePath);
         }
         sourceMapSourceInfo.sourceRoot =  this.compilationSettings.sourceRoot;
       }
 
       if (this.compilationSettings.sourceRoot) {
         // Use the relative path corresponding to the common directory path
-        sourceMapSourceInfo.tsFilePath = getRelativePathToFixedPath(this.commonDirectoryPath, tsFilePath);
+        sourceMapSourceInfo.tsFilePath = TypeScript.getRelativePathToFixedPath(this.commonDirectoryPath, tsFilePath);
       } else {
         // Source locations relative to map file location
-        sourceMapSourceInfo.tsFilePath = getRelativePathToFixedPath(sourceMapSourceInfo.sourceMapDirectory, tsFilePath);
+        sourceMapSourceInfo.tsFilePath = TypeScript.getRelativePathToFixedPath(sourceMapSourceInfo.sourceMapDirectory, tsFilePath);
       }
       return sourceMapSourceInfo;
     }
@@ -1237,7 +1237,7 @@ module TypeScript {
             var modPath = name.actualText;
             var isAmbient = pullSymbol.hasFlag(TypeScript.PullElementFlags.Ambient);
             modPath = isAmbient ? modPath : this.firstModAlias ? this.firstModAlias : quoteBaseName(modPath);
-            modPath = isAmbient ? modPath : (!isRelative(stripQuotes(modPath)) ? quoteStr("./" + stripQuotes(modPath)) : modPath);
+            modPath = isAmbient ? modPath : (!TypeScript.isRelative(TypeScript.stripQuotes(modPath)) ? TypeScript.quoteStr("./" + TypeScript.stripQuotes(modPath)) : modPath);
             this.writeToOutput("require(" + modPath + ")");
           }
         }
@@ -1272,9 +1272,9 @@ module TypeScript {
     }
 
     public recordSourceMappingStart(ast: IASTSpan) {
-      if (this.sourceMapper && isValidAstNode(ast)) {
+      if (this.sourceMapper && TypeScript.isValidAstNode(ast)) {
         var lineCol = { line: -1, character: -1 };
-        var sourceMapping = new SourceMapping();
+        var sourceMapping = new TypeScript.SourceMapping();
         sourceMapping.start.emittedColumn = this.emitState.column;
         sourceMapping.start.emittedLine = this.emitState.line;
         // REVIEW: check time consumed by this binary search (about two per leaf statement)
@@ -1296,7 +1296,7 @@ module TypeScript {
     }
 
     public recordSourceMappingEnd(ast: IASTSpan) {
-      if (this.sourceMapper && isValidAstNode(ast)) {
+      if (this.sourceMapper && TypeScript.isValidAstNode(ast)) {
         // Pop source mapping childs
         this.sourceMapper.currentMappings.pop();
 
@@ -1313,7 +1313,7 @@ module TypeScript {
     public emitSourceMapsAndClose(): void {
       // Output a source mapping.  As long as we haven't gotten any errors yet.
       if (this.sourceMapper !== null) {
-        SourceMapper.emitSourceMapping(this.allSourceMappers);
+        TypeScript.SourceMapper.emitSourceMapping(this.allSourceMappers);
       }
 
       try {
