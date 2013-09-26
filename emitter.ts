@@ -565,7 +565,7 @@ module TypeScript {
 
       // Check if the target needs a cast because it has a more specific call
       // signature than the default one like document.createElement('canvas')
-      var returnType: PullTypeSymbol = this.getSymbolForAST(callNode);
+      var returnType: PullSymbol = this.getSymbolForAST(callNode);
       var symbol: PullSymbol = this.getSymbolForAST(callNode.target);
       var emitCast: boolean = returnType !== null && symbol !== null && symbol.type.getCallSignatures().length > 1;
       if (emitCast) {
@@ -1894,11 +1894,11 @@ module TypeScript {
     }
 
     private getDeclForAST(ast: AST): PullDecl {
-      return this.semanticInfoChain.getDeclForAST(ast, this.document.fileName);
+      return this.semanticInfoChain.getDeclForAST(ast, this.document.fileName) || null;
     }
 
     private getSymbolForAST(ast: AST): PullSymbol {
-      return this.semanticInfoChain.getSymbolForAST(ast, this.document.fileName);
+      return this.semanticInfoChain.getSymbolForAST(ast, this.document.fileName) || null;
     }
 
     public emitUnaryExpression(ast: UnaryExpression, emitWorker: (emitter: Emitter) => void) {
