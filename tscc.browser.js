@@ -55379,28 +55379,6 @@ var TypeScript;
             }
         };
 
-        Emitter.prototype.getVarDeclFromIdentifier = function (boundDeclInfo) {
-            CompilerDiagnostics.assert(boundDeclInfo.boundDecl && boundDeclInfo.boundDecl.init && boundDeclInfo.boundDecl.init.nodeType() === TypeScript.NodeType.Name, "The init expression of bound declaration when emitting as constant has to be indentifier");
-
-            var init = boundDeclInfo.boundDecl.init;
-            var ident = init;
-
-            var pullSymbol = this.semanticInfoChain.getSymbolForAST(boundDeclInfo.boundDecl, this.document.fileName);
-
-            if (pullSymbol) {
-                var pullDecls = pullSymbol.getDeclarations();
-                if (pullDecls.length === 1) {
-                    var pullDecl = pullDecls[0];
-                    var ast = this.semanticInfoChain.getASTForDecl(pullDecl);
-                    if (ast && ast.nodeType() === TypeScript.NodeType.VariableDeclarator) {
-                        return { boundDecl: ast, pullDecl: pullDecl };
-                    }
-                }
-            }
-
-            return null;
-        };
-
         Emitter.prototype.getConstantDecl = function (dotExpr) {
             var pullSymbol = this.semanticInfoChain.getSymbolForAST(dotExpr, this.document.fileName);
             if (pullSymbol && pullSymbol.hasFlag(TypeScript.PullElementFlags.Constant)) {
@@ -56818,9 +56796,19 @@ var TypeScript;
         };
 
         Emitter.getFullSymbolName = function (symbol) {
-            var parentDecl = symbol.getDeclarations()[0].getParentDecl();
-            var parentSymbol = parentDecl !== null ? parentDecl.getSymbol() : null;
-            return (parentSymbol !== null ? Emitter.getFullSymbolName(parentSymbol) + '.' : '') + symbol.name;
+            var path = symbol.getDeclarations()[0].getParentPath();
+
+            for (var i = path.length - 1; i > 1; i--) {
+                var nextPullDecl = path[i - 1];
+                var symbol = nextPullDecl.getSymbol();
+
+                if (symbol !== null && symbol.kind & TypeScript.PullElementKind.SomeFunction) {
+                    break;
+                }
+            }
+            return path.slice(i).map(function (pullDecl) {
+                return pullDecl.name;
+            }).join('.');
         };
 
         Emitter.formatJSDocType = function (type) {
@@ -56933,10 +56921,7 @@ var TypeScript;
 
         Emitter.prototype.emitFullSymbolVariableStatement = function (symbol) {
             var name = Emitter.getFullSymbolName(symbol);
-            var isLocalVariable = this.thisFunctionDeclaration !== null && this.getDeclForAST(this.thisFunctionDeclaration).getChildDecls().some(function (decl) {
-                return decl.symbol === symbol;
-            });
-            this.writeToOutput(isLocalVariable || name.indexOf('.') < 0 ? 'var ' + symbol.name : name);
+            this.writeToOutput(name.indexOf('.') < 0 ? 'var ' + symbol.name : name);
         };
 
         Emitter.prototype.emitJSDocComment = function (lines) {
