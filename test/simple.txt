@@ -195,6 +195,9 @@ M.I.prototype.c = function (a) {
  * @returns {string?}
  */
 M.f = function (index) {
+  var g = function () {
+    /** @type {number} */ var h = 0;
+  };
   /** @type {number} */ var x = index;
   return '';
 };

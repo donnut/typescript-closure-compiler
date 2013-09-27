@@ -69,6 +69,9 @@ module M {
   }
 
   function f(index: number): string {
+    function g() {
+      var h = 0;
+    }
     var x = index;
     return '';
   }

@@ -497,30 +497,6 @@ module TypeScript {
       }
     }
 
-    public getVarDeclFromIdentifier(boundDeclInfo: BoundDeclInfo): BoundDeclInfo {
-      CompilerDiagnostics.assert(boundDeclInfo.boundDecl && boundDeclInfo.boundDecl.init &&
-        boundDeclInfo.boundDecl.init.nodeType() === TypeScript.NodeType.Name,
-        "The init expression of bound declaration when emitting as constant has to be indentifier");
-
-      var init = boundDeclInfo.boundDecl.init;
-      var ident = <Identifier>init;
-
-      var pullSymbol = this.semanticInfoChain.getSymbolForAST(boundDeclInfo.boundDecl, this.document.fileName);
-
-      if (pullSymbol) {
-        var pullDecls = pullSymbol.getDeclarations();
-        if (pullDecls.length === 1) {
-          var pullDecl = pullDecls[0];
-          var ast = this.semanticInfoChain.getASTForDecl(pullDecl);
-          if (ast && ast.nodeType() === TypeScript.NodeType.VariableDeclarator) {
-            return { boundDecl: <VariableDeclarator>ast, pullDecl: pullDecl };
-          }
-        }
-      }
-
-      return null;
-    }
-
     public getConstantDecl(dotExpr: BinaryExpression): BoundDeclInfo {
       var pullSymbol = this.semanticInfoChain.getSymbolForAST(dotExpr, this.document.fileName);
       if (pullSymbol && pullSymbol.hasFlag(TypeScript.PullElementFlags.Constant)) {
@@ -2004,9 +1980,20 @@ module TypeScript {
     private static EMPTY_STRING_LIST: string[] = [];
 
     private static getFullSymbolName(symbol: PullSymbol): string {
-      var parentDecl: PullDecl = symbol.getDeclarations()[0].getParentDecl();
-      var parentSymbol: PullSymbol = parentDecl !== null ? parentDecl.getSymbol() : null;
-      return (parentSymbol !== null ? Emitter.getFullSymbolName(parentSymbol) + '.' : '') + symbol.name;
+      var path: PullDecl[] = symbol.getDeclarations()[0].getParentPath();
+
+      // Count down to 1 because 0 is the file name
+      for (var i = path.length - 1; i > 1; i--) {
+        var nextPullDecl: PullDecl = path[i - 1];
+        var symbol: PullSymbol = nextPullDecl.getSymbol();
+
+        // Stop before functions since symbols inside functions are
+        // automatically available through regular lexical scoping
+        if (symbol !== null && symbol.kind & TypeScript.PullElementKind.SomeFunction) {
+          break;
+        }
+      }
+      return path.slice(i).map(pullDecl => pullDecl.name).join('.');
     }
 
     private static formatJSDocType(type: PullTypeSymbol): string {
@@ -2124,8 +2111,7 @@ module TypeScript {
 
     private emitFullSymbolVariableStatement(symbol: PullSymbol) {
       var name: string = Emitter.getFullSymbolName(symbol);
-      var isLocalVariable: boolean = this.thisFunctionDeclaration !== null && this.getDeclForAST(this.thisFunctionDeclaration).getChildDecls().some(decl => decl.symbol === symbol);
-      this.writeToOutput(isLocalVariable || name.indexOf('.') < 0 ? 'var ' + symbol.name : name);
+      this.writeToOutput(name.indexOf('.') < 0 ? 'var ' + symbol.name : name);
     }
 
     private emitJSDocComment(lines: string[]) {
