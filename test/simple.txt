@@ -89,24 +89,24 @@ I.prototype.c = function (a) {
 
 /**
  * @param {number} index
- * @returns {string?}
+ * @returns {string}
  */
 var f = function (index) {
   /** @type {?} */ var a;
   /** @type {undefined} */ var b = void 0;
   /** @type {number} */ var c = 0;
-  /** @type {string?} */ var d = '';
+  /** @type {string} */ var d = '';
   /** @type {boolean} */ var e = false;
   /** @type {Array.<?>} */ var f = [];
-  /** @type {Array.<string?>} */ var g = [''];
-  /** @type {Array.<Array.<string?>>} */ var h = [['']];
+  /** @type {Array.<string>} */ var g = [''];
+  /** @type {Array.<Array.<string>>} */ var h = [['']];
   /** @type {?function(): number} */ var i = function () {
     return 0;
   };
-  /** @type {{ 0: string? }} */ var j = { 0: 'a' };
+  /** @type {{ 0: string }} */ var j = { 0: 'a' };
   /** @type {{ a: number }} */ var k = { a: 0 };
-  /** @type {Object.<number, string?>} */ var l = { 0: 'a' };
-  /** @type {Object.<string?, number>} */ var m = { a: 0 };
+  /** @type {Object.<number, string>} */ var l = { 0: 'a' };
+  /** @type {Object.<string, number>} */ var m = { a: 0 };
   return '';
 };
 
@@ -192,7 +192,7 @@ M.I.prototype.c = function (a) {
 
 /**
  * @param {number} index
- * @returns {string?}
+ * @returns {string}
  */
 M.f = function (index) {
   var g = function () {
@@ -284,7 +284,7 @@ M.MM.I.prototype.c = function (a) {
 
 /**
  * @param {number} index
- * @returns {string?}
+ * @returns {string}
  */
 M.MM.f = function (index) {
   /** @type {number} */ var x = index;

@@ -2007,7 +2007,9 @@ module TypeScript {
       if (type.isNamedTypeSymbol()) {
         if (type.name === 'any') return '?';
         if (type.name === 'void') return 'undefined';
-        if (type.name === 'string') return 'string?'; // TypeScript has nullable strings
+        if (type.name === 'Boolean') return '?boolean'; // Use "Boolean" for a nullable boolean
+        if (type.name === 'Number') return '?number'; // Use "Number" for a nullable number
+        if (type.name === 'String') return '?string'; // Use "String" for a nullable string
         return type.name;
       }
 
