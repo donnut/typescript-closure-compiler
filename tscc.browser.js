@@ -56821,8 +56821,12 @@ var TypeScript;
                     return '?';
                 if (type.name === 'void')
                     return 'undefined';
-                if (type.name === 'string')
-                    return 'string?';
+                if (type.name === 'Boolean')
+                    return '?boolean';
+                if (type.name === 'Number')
+                    return '?number';
+                if (type.name === 'String')
+                    return '?string';
                 return type.name;
             }
 
