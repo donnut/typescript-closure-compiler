@@ -1501,14 +1501,15 @@ module TypeScript {
     }
 
     public emitInlineVariableDeclaration(ast: VariableDeclaration) {
-      this.writeToOutput('var ');
       for (var i = 0, n = ast.declarators.members.length; i < n; i++) {
         var varDecl: VariableDeclarator = <VariableDeclarator>ast.declarators.members[i];
+        var name: string = Emitter.getFullSymbolName(this.getSymbolForAST(varDecl));
         if (i > 0) this.writeToOutput(', ');
+        else if (name.indexOf('.') < 0) this.writeToOutput('var ');
         this.emitComments(varDecl, true);
         this.recordSourceMappingStart(varDecl);
         this.recordSourceMappingStart(varDecl.id);
-        this.writeToOutput(varDecl.id.actualText);
+        this.writeToOutput(name);
         this.recordSourceMappingEnd(varDecl.id);
         if (varDecl.init) {
           this.writeToOutput(" = ");

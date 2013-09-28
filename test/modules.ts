@@ -1,3 +1,5 @@
+for (var i = 0; i < 10; i++) {}
+
 module M {
   var foo: number;
   var bar = { baz: 1 };
@@ -6,6 +8,8 @@ module M {
     foo: number;
     static bar: number;
   }
+
+  for (var i = 0; i < 10; i++) {}
 }
 
 module MM {
