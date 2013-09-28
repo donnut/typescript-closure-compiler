@@ -8,6 +8,7 @@ var __extends = function (d, b) {
   __.prototype = b.prototype;
   d.prototype = new __();
 };
+
 /** @type {?Object} */ var empty = {};
 
 /**
@@ -17,7 +18,6 @@ var Foo = {
   ABC: 0,
   XYZ: 100
 };
-
 
 /** @type {number} */ var v = 0;
 /** @type {boolean} */ var v1 = false;
@@ -31,6 +31,7 @@ var A = function () {
   /** @type {number} */ this.a;
   /** @type {number} */ this.e = 0;
 };
+
 /**
  * @param {number} a
  * @returns {boolean}
@@ -47,16 +48,9 @@ A.d = function (a) {
   new A();
   return a === v;
 };
-/**
- * @type {number}
- */
-A.b;
+/** @type {number} */ A.b;
 
-/**
- * @type {number}
- */
-A.f = 0;
-
+/** @type {number} */ A.f = 0;
 
 /**
  * @constructor
@@ -68,9 +62,7 @@ var B = function () {
   A.call(this);
   window['console'].log(A.prototype, this.c(/** @type {number} */ (window['foo'])));
 };
-
 __extends(B, A);
-
 
 /**
  * @interface
@@ -78,18 +70,13 @@ __extends(B, A);
 var I = function () {
 };
 
-/**
- * @type {number}
- */
-I.prototype.a;
-
+/** @type {number} */ I.prototype.a;
 /**
  * @param {number} a
  * @returns {boolean}
  */
 I.prototype.c = function (a) {
 };
-
 
 /**
  * @param {number} index
@@ -115,6 +102,7 @@ var f = function (index) {
 };
 
 var M = {};
+
 /**
  * @enum {number}
  */
@@ -122,7 +110,6 @@ M.Foo = {
   ABC: 0,
   XYZ: 100
 };
-
 
 /** @type {number} */ M.v = 0;
 /** @type {boolean} */ M.v1 = false;
@@ -136,6 +123,7 @@ M.A = function () {
   /** @type {number} */ this.a;
   /** @type {number} */ this.e = 0;
 };
+
 /**
  * @param {number} a
  * @returns {boolean}
@@ -152,16 +140,9 @@ M.A.d = function (a) {
   new M.A();
   return a === M.v;
 };
-/**
- * @type {number}
- */
-M.A.b;
+/** @type {number} */ M.A.b;
 
-/**
- * @type {number}
- */
-M.A.f = 0;
-
+/** @type {number} */ M.A.f = 0;
 
 /**
  * @constructor
@@ -173,9 +154,7 @@ M.B = function () {
   M.A.call(this);
   window['console'].log(M.A.prototype);
 };
-
 __extends(M.B, M.A);
-
 
 /**
  * @interface
@@ -183,18 +162,13 @@ __extends(M.B, M.A);
 M.I = function () {
 };
 
-/**
- * @type {number}
- */
-M.I.prototype.a;
-
+/** @type {number} */ M.I.prototype.a;
 /**
  * @param {number} a
  * @returns {boolean}
  */
 M.I.prototype.c = function (a) {
 };
-
 
 /**
  * @param {number} index
@@ -209,6 +183,7 @@ M.f = function (index) {
 };
 
 M.MM = {};
+
 /**
  * @enum {number}
  */
@@ -216,7 +191,6 @@ M.MM.Foo = {
   ABC: 0,
   XYZ: 100
 };
-
 
 /** @type {number} */ M.MM.v = 0;
 /** @type {boolean} */ M.MM.v1 = false;
@@ -230,6 +204,7 @@ M.MM.A = function () {
   /** @type {number} */ this.a;
   /** @type {number} */ this.e = 0;
 };
+
 /**
  * @param {number} a
  * @returns {boolean}
@@ -246,16 +221,9 @@ M.MM.A.d = function (a) {
   new M.MM.A();
   return a === M.MM.v;
 };
-/**
- * @type {number}
- */
-M.MM.A.b;
+/** @type {number} */ M.MM.A.b;
 
-/**
- * @type {number}
- */
-M.MM.A.f = 0;
-
+/** @type {number} */ M.MM.A.f = 0;
 
 /**
  * @constructor
@@ -267,9 +235,7 @@ M.MM.B = function () {
   M.MM.A.call(this);
   window['console'].log(M.MM.A.prototype);
 };
-
 __extends(M.MM.B, M.MM.A);
-
 
 /**
  * @interface
@@ -277,18 +243,13 @@ __extends(M.MM.B, M.MM.A);
 M.MM.I = function () {
 };
 
-/**
- * @type {number}
- */
-M.MM.I.prototype.a;
-
+/** @type {number} */ M.MM.I.prototype.a;
 /**
  * @param {number} a
  * @returns {boolean}
  */
 M.MM.I.prototype.c = function (a) {
 };
-
 
 /**
  * @param {number} index
@@ -338,29 +299,22 @@ M.MM.tryCatch2 = function () {
   }
 };
 
-
 /**
  * @typedef {Object.<string, M.MM.A>}
  */
 M.MM.IndexFoo;
-
 
 /**
  * @typedef {(Object.<string, M.MM.A>|Object.<number, M.MM.B>)}
  */
 M.MM.IndexFoo2;
 
-
 /**
  * @typedef {?function(string): M.MM.A}
  */
 M.MM.CallFoo;
 
-
 /**
  * @typedef {(?function(string): M.MM.A|?function(number): M.MM.B)}
  */
 M.MM.CallFoo2;
-
-
-

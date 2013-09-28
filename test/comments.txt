@@ -8,6 +8,7 @@ var __extends = function (d, b) {
   __.prototype = b.prototype;
   d.prototype = new __();
 };
+
 /**
  * "* /"
  *
@@ -17,7 +18,6 @@ var __extends = function (d, b) {
 var MustNotBreak = function () {
 };
 
-
 /**
  * class A implements C
  *
@@ -26,9 +26,14 @@ var MustNotBreak = function () {
  * @implements {C}
  */
 var A = function () {
-  // a: number
-  /** @type {number} */ this.a;
+  /**
+   * a: number
+   *
+   * @type {number}
+   */
+  this.a;
 };
+
 /**
  * c(a: number): boolean
  *
@@ -55,7 +60,6 @@ A.d = function (a) {
  */
 A.b;
 
-
 /**
  * class B extends A
  *
@@ -68,9 +72,7 @@ A.b;
 var B = function () {
   A.call(this);
 };
-
 __extends(B, A);
-
 
 /**
  * interface A
@@ -96,13 +98,11 @@ C.prototype.a;
 C.prototype.c = function (a) {
 };
 
-
-// module M
 /**
  * module M
  */
 var M = {};
-// enum E
+
 /**
  * enum E
  *
@@ -114,5 +114,3 @@ M.E = {
   // enum E.B
   B: 101
 };
-
-

@@ -1,5 +1,5 @@
-TypeScript.ModuleDeclaration.prototype.shouldEmit = function() {
-  return true;
+TypeScript.ModuleDeclaration.prototype.emit = function(emitter) {
+  emitter.emitModule(this);
 };
 
 TypeScript.InterfaceDeclaration.prototype.shouldEmit = function() {

@@ -8,6 +8,7 @@ var __extends = function (d, b) {
   __.prototype = b.prototype;
   d.prototype = new __();
 };
+
 /**
  * @constructor
  * @struct
@@ -15,6 +16,7 @@ var __extends = function (d, b) {
  */
 var Foo = function () {
 };
+
 /**
  * @param {?} a
  * @param {?} b
@@ -24,7 +26,6 @@ Foo.prototype.foo = function (a, b) {
   return false;
 };
 
-
 /**
  * @constructor
  * @struct
@@ -33,8 +34,8 @@ Foo.prototype.foo = function (a, b) {
 var Bar = function () {
   Foo.apply(this, arguments);
 };
-
 __extends(Bar, Foo);
+
 /**
  * @param {?} a
  * @param {?} b
@@ -43,7 +44,6 @@ __extends(Bar, Foo);
 Bar.prototype.bar = function (a, b) {
   return false;
 };
-
 
 /**
  * @interface
@@ -59,7 +59,6 @@ var IFoo = function () {
 IFoo.prototype.foo = function (a, b) {
 };
 
-
 /**
  * @interface
  * @extends {IFoo}
@@ -74,7 +73,6 @@ var IBar = function () {
  */
 IBar.prototype.bar = function (a, b) {
 };
-
 
 /**
  * @param {?} a
@@ -92,9 +90,7 @@ var foo = function (a, b, foo, ifoo) {
  */
 var IndexFoo;
 
-
 /**
  * @typedef {?function(string): ?}
  */
 var CallFoo;
-
