@@ -9,6 +9,16 @@ var __extends = function (d, b) {
   d.prototype = new __();
 };
 /**
+ * "* /"
+ *
+ * @constructor
+ * @struct
+ */
+var MustNotBreak = function () {
+};
+
+
+/**
  * class A implements C
  *
  * @constructor

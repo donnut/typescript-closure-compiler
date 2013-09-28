@@ -1,3 +1,6 @@
+// "*/"
+class MustNotBreak {}
+
 // class A implements C
 class A implements C {
   // a: number

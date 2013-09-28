@@ -1824,7 +1824,7 @@ module TypeScript {
 
     private emitJSDocComment(lines: string[]) {
       if (lines.length === 0) return;
-      lines = ['/**'].concat(lines.map(line => ' ' + ('* ' + line).trim()), [' */']);
+      lines = ['/**'].concat(lines.map(line => ' ' + ('* ' + line.replace(/\*\//g, '* /')).trim()), [' */']);
       lines.forEach((line, i) => {
         if (i) this.emitIndent();
         this.writeLineToOutput(line);
