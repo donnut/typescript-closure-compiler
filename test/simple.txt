@@ -300,6 +300,29 @@ M.MM.f = function (index) {
   return '';
 };
 
+M.MM.tryCatch1 = function () {
+  try  {
+    /** @type {?} */ var foo;
+    foo = 100;
+    foo = '';
+  } catch (e) {
+    foo = e;
+  }
+};
+
+M.MM.tryCatch2 = function () {
+  try  {
+    try  {
+    } catch (e) {
+    }
+    /** @type {?} */ var foo;
+    foo = 100;
+    foo = '';
+  } catch (e) {
+    foo = e;
+  }
+};
+
 /**
  * @typedef {Object.<string, A>}
  */

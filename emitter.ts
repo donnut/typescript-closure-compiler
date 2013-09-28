@@ -634,73 +634,6 @@ module TypeScript {
       }
     }
 
-    private getImportDecls(fileName: string): PullDecl[] {
-      var semanticInfo = this.semanticInfoChain.getUnit(this.document.fileName);
-      var result: PullDecl[] = [];
-
-      var queue: PullDecl[] = semanticInfo.getTopLevelDecls();
-
-      while (queue.length > 0) {
-        var decl = queue.shift();
-
-        if (decl.kind & TypeScript.PullElementKind.TypeAlias) {
-          var importStatementAST = <ImportDeclaration>semanticInfo.getASTForDecl(decl);
-          if (importStatementAST.alias.nodeType() === TypeScript.NodeType.Name) { // name or dynamic module name
-            var text = (<Identifier>importStatementAST.alias).actualText;
-            if (isQuoted(text)) { // dynamic module name (string literal)
-              var symbol = decl.getSymbol();
-              var typeSymbol = symbol && symbol.type;
-              if (typeSymbol && typeSymbol !== this.semanticInfoChain.anyTypeSymbol && !typeSymbol.isError()) {
-                result.push(decl);
-              }
-            }
-          }
-        }
-
-        // visit children
-        queue = queue.concat(decl.getChildDecls());
-      }
-
-      return result;
-    }
-
-    public getModuleImportAndDependencyList(moduleDecl: ModuleDeclaration) {
-      var importList = "";
-      var dependencyList = "";
-
-      var semanticInfo = this.semanticInfoChain.getUnit(this.document.fileName);
-      var importDecls = this.getImportDecls(this.document.fileName);
-
-      // all dependencies are quoted
-      if (importDecls.length) {
-        for (var i = 0; i < importDecls.length; i++) {
-          var importStatementDecl = importDecls[i];
-          var importStatementSymbol = <PullTypeAliasSymbol>importStatementDecl.getSymbol();
-          var importStatementAST = <ImportDeclaration>semanticInfo.getASTForDecl(importStatementDecl);
-
-          if (importStatementSymbol.isUsedAsValue) {
-            if (i <= importDecls.length - 1) {
-              dependencyList += ", ";
-              importList += ", ";
-            }
-
-            importList += "__" + importStatementDecl.name + "__";
-            dependencyList += importStatementAST.firstAliasedModToString();
-          }
-        }
-      }
-
-      // emit any potential amd dependencies
-      for (var i = 0; i < moduleDecl.amdDependencies.length; i++) {
-        dependencyList += ", \"" + moduleDecl.amdDependencies[i] + "\"";
-      }
-
-      return {
-        importList: importList,
-        dependencyList: dependencyList
-      };
-    }
-
     public shouldCaptureThis(ast: AST) {
       var decl = this.semanticInfoChain.getDeclForAST(ast, this.document.fileName);
       if (decl) {
@@ -887,11 +820,9 @@ module TypeScript {
 
       if (!name.isMissing()) {
         var pullSymbol = this.semanticInfoChain.getSymbolForAST(name, this.document.fileName);
-        if (!pullSymbol) {
-          pullSymbol = this.semanticInfoChain.anyTypeSymbol;
-        }
-
-        if (isNotMemberAccess) {
+        if (pullSymbol === null) {
+          this.writeToOutput(name.text());
+        } else if (isNotMemberAccess) {
           this.writeToOutput(Emitter.getFullSymbolName(pullSymbol));
         } else {
           this.writeToOutput(pullSymbol.name);
@@ -1662,14 +1593,12 @@ module TypeScript {
         return symbol.name;
       }
 
-      // Count down to 1 because 0 is the file name
-      for (var i = path.length - 1; i > 1; i--) {
-        var currentSymbol: PullSymbol = path[i].getSymbol();
+      for (var i = path.length - 1; i > 0; i--) {
         var nextSymbol: PullSymbol = path[i - 1].getSymbol();
 
         // Stop before functions since symbols inside functions are
         // automatically available through regular lexical scoping
-        if (nextSymbol !== null && nextSymbol.kind & TypeScript.PullElementKind.SomeFunction) {
+        if (nextSymbol === null || nextSymbol.kind & TypeScript.PullElementKind.SomeFunction) {
           break;
         }
       }
@@ -1710,7 +1639,7 @@ module TypeScript {
       if (type.kind & TypeScript.PullElementKind.ConstructorType && type.getConstructSignatures().length > 0) {
         return Emitter.formatJSDocUnionType(type.getConstructSignatures().map(signature => '?function(' + // TypeScript has nullable functions
           (signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ['new:' + Emitter.formatJSDocType(signature.returnType)] :
-            Emitter.EMPTY_STRING_LIST).concat(signature.parameters.map(arg => Emitter.formatJSDocType(arg.type))).join(', ') + ')'));
+            Emitter.EMPTY_STRING_LIST).concat(signature.parameters.map((arg: PullSymbol) => Emitter.formatJSDocType(arg.type))).join(', ') + ')'));
       }
 
       // Map types

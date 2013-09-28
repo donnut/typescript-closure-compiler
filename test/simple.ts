@@ -110,6 +110,27 @@ module M {
       return '';
     }
 
+    function tryCatch1() {
+      try {
+        var foo: any;
+        foo = 100;
+        foo = '';
+      } catch (e) {
+        foo = e;
+      }
+    }
+
+    function tryCatch2() {
+      try {
+        try {} catch (e) {}
+        var foo: any;
+        foo = 100;
+        foo = '';
+      } catch (e) {
+        foo = e;
+      }
+    }
+
     interface IndexFoo {
       [name: string]: A;
     }
