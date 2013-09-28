@@ -1660,10 +1660,11 @@ module TypeScript {
     }
 
     private static shouldMangleSymbol(symbol: PullSymbol): boolean {
-      var name: string = symbol.getDisplayName();
+      // Short-circuit if there's no compiler flag
+      if (!Emitter.MANGLE_NAMES) return false;
 
       // Object literal properties may be numbers
-      if (/^\d/.test(name)) return false;
+      if (/^\d/.test(symbol.getDisplayName())) return false;
 
       // Ignore symbols not in the user's code
       var path: PullDecl[] = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
