@@ -23,6 +23,11 @@ module TypeScript {
     YES,
   }
 
+  enum ShouldMangle {
+    NO,
+    YES,
+  }
+
   export enum EmitContainer {
     Prog,
     Module,
@@ -1647,8 +1652,7 @@ module TypeScript {
     private static EMPTY_STRING_LIST: string[] = [];
 
     private static mangleNameText(text: string): string {
-      // return '$' + text;
-      return text;
+      return Emitter.MANGLE_NAMES ? text + '$mangled' : text;
     }
 
     private static mangleVarArgSymbolName(symbol: PullSymbol): string {
@@ -1663,6 +1667,7 @@ module TypeScript {
 
       // Ignore symbols not in the user's code
       var path: PullDecl[] = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
+      if (path.length === 0) return name;
       var rootPath: string = path[0].name;
       if (!/\.ts$/.test(rootPath) || /\.d\.ts$/.test(rootPath)) return name;
 
@@ -1674,12 +1679,12 @@ module TypeScript {
       return Emitter.mangleNameText(name);
     }
 
-    private static getFullSymbolName(symbol: PullSymbol): string {
+    private static getFullSymbolName(symbol: PullSymbol, shouldMangle: ShouldMangle = ShouldMangle.YES): string {
       var path: PullDecl[] = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
 
       // Never use the full parent path for object properties
       if (symbol.kind & TypeScript.PullElementKind.Property && !(path[path.length - 1].flags & TypeScript.PullElementFlags.Static)) {
-        return Emitter.mangleSymbolName(symbol);
+        return shouldMangle === ShouldMangle.YES ? Emitter.mangleSymbolName(symbol) : symbol.name;
       }
 
       for (var i = path.length - 1; i > 0; i--) {
@@ -1692,7 +1697,10 @@ module TypeScript {
         }
       }
 
-      return path.slice(i).map(pullDecl => Emitter.mangleSymbolName(pullDecl.getSymbol())).join('.');
+      return path.slice(i).map(pullDecl => {
+        var symbol: PullSymbol = pullDecl.getSymbol();
+        return shouldMangle === ShouldMangle.YES ? Emitter.mangleSymbolName(symbol) : symbol.name;
+      }).join('.');
     }
 
     private static formatJSDocUnionType(parts: string[]): string {
@@ -1842,7 +1850,7 @@ module TypeScript {
 
     private getJSDocForVariableDeclaration(varDecl: VariableDeclarator): string[] {
       var symbol: PullSymbol = this.getSymbolForAST(varDecl);
-      return Emitter.DEFINES.indexOf(Emitter.getFullSymbolName(symbol)) >= 0
+      return Emitter.DEFINES.indexOf(Emitter.getFullSymbolName(symbol, ShouldMangle.NO)) >= 0
         ? ['@define {' + Emitter.formatJSDocType(symbol.type) + '}']
         : Emitter.detectedConstants.indexOf(symbol) >= 0
           ? Emitter.getJSDocForConst(symbol.type)
@@ -1950,6 +1958,7 @@ module TypeScript {
 
     // This will be set by tscc, which checks command line flags
     public static DEFINES: string[] = [];
+    public static MANGLE_NAMES: boolean = false;
     public static DETECT_CONSTANTS: boolean = false;
     private static detectedConstants: PullSymbol[] = [];
   }

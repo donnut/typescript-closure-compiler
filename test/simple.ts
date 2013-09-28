@@ -17,7 +17,7 @@ class A {
 class B extends A implements I {
   constructor() {
     super();
-    window['console'].log(super, this.c(<number>window['foo']));
+    var capture = <any>super;
   }
 }
 
@@ -40,6 +40,7 @@ function f(index: number): string {
   var k = { a: 0 };
   var l: { [index: number]: string } = { 0: 'a' };
   var m: { [index: string]: number } = { a: 0 };
+  var n = { 'a': 0 };
   return '';
 }
 
@@ -61,7 +62,7 @@ module M {
   class B extends A implements I {
     constructor() {
       super();
-      window['console'].log(super);
+      var capture = <any>super;
     }
   }
 
@@ -96,7 +97,7 @@ module M {
     class B extends A implements I {
       constructor() {
         super();
-        window['console'].log(super);
+        var capture = <any>super;
       }
     }
 

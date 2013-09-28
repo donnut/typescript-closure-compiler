@@ -61,7 +61,7 @@ A.d = function (a) {
  */
 var B = function () {
   A.call(this);
-  window['console'].log(A.prototype, this.c(/** @type {number} */ (window['foo'])));
+  /** @type {?} */ var capture = /** @type {?} */ (A.prototype);
 };
 
 __extends(B, A);
@@ -100,6 +100,7 @@ var f = function (index) {
   /** @type {?{ a: number }} */ var k = { a: 0 };
   /** @type {Object.<number, string>} */ var l = { 0: 'a' };
   /** @type {Object.<string, number>} */ var m = { a: 0 };
+  /** @type {?{ 'a': number }} */ var n = { 'a': 0 };
   return '';
 };
 
@@ -155,7 +156,7 @@ M.A.d = function (a) {
  */
 M.B = function () {
   M.A.call(this);
-  window['console'].log(M.A.prototype);
+  /** @type {?} */ var capture = /** @type {?} */ (M.A.prototype);
 };
 
 __extends(M.B, M.A);
@@ -238,7 +239,7 @@ M.MM.A.d = function (a) {
  */
 M.MM.B = function () {
   M.MM.A.call(this);
-  window['console'].log(M.MM.A.prototype);
+  /** @type {?} */ var capture = /** @type {?} */ (M.MM.A.prototype);
 };
 
 __extends(M.MM.B, M.MM.A);
