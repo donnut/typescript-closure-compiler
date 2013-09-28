@@ -53,6 +53,7 @@ A.prototype.c = function (a) {
 A.d = function (a) {
   return false;
 };
+
 /**
  * static b: number
  *
@@ -72,6 +73,7 @@ A.b;
 var B = function () {
   A.call(this);
 };
+
 __extends(B, A);
 
 /**

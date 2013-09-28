@@ -5,10 +5,15 @@ var path = require('path');
 var tsc = path.join(path.dirname(require.resolve('typescript')), 'tsc.js');
 
 var DEFINES = [];
-for (var i = 2; i + 1 < process.argv.length; i++) {
+var DETECT_CONSTANTS = false;
+
+for (var i = 2; i < process.argv.length; i++) {
   var arg = process.argv[i];
-  if (arg === '--define') {
+  if (arg === '--define' && i + 1 < process.argv.length) {
     DEFINES.push(process.argv.splice(i--, 2)[1]);
+  } else if (arg === '--const') {
+    DETECT_CONSTANTS = true;
+    process.argv.splice(i--, 1);
   }
 }
 
@@ -25,6 +30,7 @@ TypeScript.OptionsParser.prototype.printUsage = function(printUsage) {
   var closureCompilerOptions = [
     'Google Closure Compiler options:',
     '  --define VAR                  Generate a @define annotation for VAR',
+    '  --const                       Attempt to detect and annotate constants with @const',
     '',
     ''
   ].join('\n');
@@ -32,5 +38,6 @@ TypeScript.OptionsParser.prototype.printUsage = function(printUsage) {
 }(TypeScript.OptionsParser.prototype.printUsage);
 
 TypeScript.Emitter.DEFINES = DEFINES;
+TypeScript.Emitter.DETECT_CONSTANTS = DETECT_CONSTANTS;
 process.mainModule.filename = tsc;
 batch.batchCompile();

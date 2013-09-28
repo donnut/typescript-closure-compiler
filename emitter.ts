@@ -170,8 +170,9 @@ module TypeScript {
       public outfile: ITextWriter,
       public emitOptions: EmitOptions,
       private semanticInfoChain: SemanticInfoChain) {
-        TypeScript.globalSemanticInfoChain = semanticInfoChain;
-        TypeScript.globalBinder.semanticInfoChain = semanticInfoChain;
+
+      TypeScript.globalSemanticInfoChain = semanticInfoChain;
+      TypeScript.globalBinder.semanticInfoChain = semanticInfoChain;
     }
 
     public setExportAssignmentIdentifier(id: string) {
@@ -311,7 +312,7 @@ module TypeScript {
       this.emitCommentsArray(comments);
     }
 
-    public emitCommentsArray(comments: Comment[]): void {
+    public emitCommentsArray(comments: Comment[]) {
       if (!this.emitOptions.compilationSettings.removeComments && comments) {
         for (var i = 0, n = comments.length; i < n; i++) {
           this.emitComment(comments[i]);
@@ -390,7 +391,7 @@ module TypeScript {
     }
 
     // Enum constants are handled by Google Closure Compiler
-    public tryEmitConstant(dotExpr: BinaryExpression) {
+    public tryEmitConstant(dotExpr: BinaryExpression): boolean {
       return false;
     }
 
@@ -581,7 +582,7 @@ module TypeScript {
       this.emitComments(funcDecl, false);
     }
 
-    private emitDefaultValueAssignments(funcDecl: FunctionDeclaration): void {
+    private emitDefaultValueAssignments(funcDecl: FunctionDeclaration) {
       var n = funcDecl.arguments.members.length;
       if (funcDecl.variableArgList) {
         n--;
@@ -604,7 +605,7 @@ module TypeScript {
       }
     }
 
-    private emitRestParameterInitializer(funcDecl: FunctionDeclaration): void  {
+    private emitRestParameterInitializer(funcDecl: FunctionDeclaration) {
       if (funcDecl.variableArgList) {
         var n = funcDecl.arguments.members.length;
         var lastArg = <Parameter>funcDecl.arguments.members[n - 1];
@@ -712,7 +713,7 @@ module TypeScript {
       this.moduleName = svModuleName;
     }
 
-    public emitEnumElement(varDecl: VariableDeclarator): void {
+    public emitEnumElement(varDecl: VariableDeclarator) {
       this.emitComments(varDecl, true);
       this.recordSourceMappingStart(varDecl);
       this.writeToOutput(varDecl.id.actualText + ': ');
@@ -902,7 +903,7 @@ module TypeScript {
     }
 
     // Note: may throw exception.
-    public emitSourceMapsAndClose(): void {
+    public emitSourceMapsAndClose() {
       // Output a source mapping.  As long as we haven't gotten any errors yet.
       if (this.sourceMapper !== null) {
         TypeScript.SourceMapper.emitSourceMapping(this.allSourceMappers);
@@ -916,7 +917,7 @@ module TypeScript {
       }
     }
 
-    private emitParameterPropertyAndMemberVariableAssignments(): void {
+    private emitParameterPropertyAndMemberVariableAssignments() {
       // emit any parameter properties first
       var constructorDecl = this.thisClassNode.constructorDecl;
 
@@ -951,7 +952,7 @@ module TypeScript {
       }
     }
 
-    public emitCommaSeparatedList(list: ASTList, startLine: boolean = false): void {
+    public emitCommaSeparatedList(list: ASTList, startLine: boolean = false) {
       if (list === null) {
         return;
       }
@@ -1019,7 +1020,7 @@ module TypeScript {
 
     // If these two constructs had more than one line between them originally, then emit at
     // least one blank line between them.
-    public emitSpaceBetweenConstructs(node1: AST, node2: AST): void {
+    public emitSpaceBetweenConstructs(node1: AST, node2: AST) {
       if (node1 === null || node2 === null) {
         return;
       }
@@ -1081,7 +1082,7 @@ module TypeScript {
       return [];
     }
 
-    private emitPossibleCopyrightHeaders(script: Script): void {
+    private emitPossibleCopyrightHeaders(script: Script) {
       var list = script.moduleElements;
       if (list.members.length > 0) {
         var firstElement = list.members[0];
@@ -1319,7 +1320,7 @@ module TypeScript {
       this.thisBaseName = svBaseName;
     }
 
-    private emitClassMembers(classDecl: ClassDeclaration): void {
+    private emitClassMembers(classDecl: ClassDeclaration) {
       // First, emit all the functions.
       var lastEmittedMember: AST = null;
       var isFirstLine = true;
@@ -1365,6 +1366,10 @@ module TypeScript {
           }
         }
       }
+
+      // Reset spacing
+      isFirstLine = true;
+      lastEmittedMember = null;
 
       // Now emit all the statics.
       for (var i = 0, n = classDecl.members.members.length; i < n; i++) {
@@ -1471,7 +1476,7 @@ module TypeScript {
       }
     }
 
-    public emitBlockOrStatement(node: AST): void {
+    public emitBlockOrStatement(node: AST) {
       if (node.nodeType() === TypeScript.NodeType.Block) {
         node.emit(this);
       }
@@ -1483,7 +1488,7 @@ module TypeScript {
       }
     }
 
-    public static throwEmitterError(e: Error): void {
+    public static throwEmitterError(e: Error) {
       var error: any = new Error(e.message);
       error.isEmitterError = true;
       throw error;
@@ -1596,7 +1601,7 @@ module TypeScript {
       this.emitInterfaceMembers(interfaceDecl);
     }
 
-    private emitInterfaceMembers(interfaceDecl: InterfaceDeclaration): void {
+    private emitInterfaceMembers(interfaceDecl: InterfaceDeclaration) {
       var lastEmittedMember: AST = null;
       var isFirstLine = true;
 
@@ -1730,6 +1735,10 @@ module TypeScript {
       return ['@type {' + Emitter.formatJSDocType(type) + '}'];
     }
 
+    private static getJSDocForConst(type: PullTypeSymbol): string[] {
+      return ['@const {' + Emitter.formatJSDocType(type) + '}'];
+    }
+
     private static getJSDocForArguments(symbols: PullSymbol[]): string[] {
       return symbols.map(symbol => {
         var type: string = Emitter.formatJSDocType(symbol.type);
@@ -1787,7 +1796,9 @@ module TypeScript {
       var symbol: PullSymbol = this.getSymbolForAST(varDecl);
       return Emitter.DEFINES.indexOf(Emitter.getFullSymbolName(symbol)) >= 0
         ? ['@define {' + Emitter.formatJSDocType(symbol.type) + '}']
-        : Emitter.getJSDocForType(symbol.type);
+        : Emitter.detectedConstants.indexOf(symbol) >= 0
+          ? Emitter.getJSDocForConst(symbol.type)
+          : Emitter.getJSDocForType(symbol.type);
     }
 
     private static joinJSDocComments(first: string[], second: string[]): string[] {
@@ -1814,7 +1825,84 @@ module TypeScript {
       else this.emitJSDocComment(Emitter.joinJSDocComments(user, jsDoc));
     }
 
+    public static detectConstants(compiler: TypeScriptCompiler, ioHost: EmitterIOHost) {
+      if (!Emitter.DETECT_CONSTANTS) return;
+
+      var potentialConstants: PullSymbol[] = [];
+      var impossibleConstants: PullSymbol[] = [];
+
+      compiler.fileNameToDocument.getAllKeys().forEach(fileName => {
+        TypeScript.walkAST(compiler.getDocument(fileName).script, (path, walker) => {
+          switch (path.nodeType()) {
+            // Check all variable declarations for potential constants. This
+            // ignores instance variables and variables of non-primitive type
+            // since the intent of this detection step is to help the Google
+            // Closure Compiler with inlining.
+            case TypeScript.NodeType.VariableDeclarator:
+              var varDecl = <VariableDeclarator>path.ast();
+              if (varDecl.init !== null) {
+                var symbol = compiler.semanticInfoChain.getSymbolForAST(path.ast(), fileName);
+                if (symbol !== null && potentialConstants.indexOf(symbol) === -1 && (
+                    symbol.type.isPrimitive() || symbol.type.getTypeName() === 'RegExp') && (
+                    symbol.kind === TypeScript.PullElementKind.Variable ||
+                    symbol.kind === TypeScript.PullElementKind.Property && varDecl.isStatic())) {
+                  potentialConstants.push(symbol);
+                }
+              }
+              break;
+
+            // A symbol is not a constant if it has been assigned to other than
+            // by its declaration
+            case TypeScript.NodeType.AssignmentExpression:
+            case TypeScript.NodeType.AddAssignmentExpression:
+            case TypeScript.NodeType.SubtractAssignmentExpression:
+            case TypeScript.NodeType.MultiplyAssignmentExpression:
+            case TypeScript.NodeType.DivideAssignmentExpression:
+            case TypeScript.NodeType.ModuloAssignmentExpression:
+            case TypeScript.NodeType.AndAssignmentExpression:
+            case TypeScript.NodeType.ExclusiveOrAssignmentExpression:
+            case TypeScript.NodeType.OrAssignmentExpression:
+            case TypeScript.NodeType.LeftShiftAssignmentExpression:
+            case TypeScript.NodeType.SignedRightShiftAssignmentExpression:
+            case TypeScript.NodeType.UnsignedRightShiftAssignmentExpression:
+              var binaryExpr = <BinaryExpression>path.ast();
+              switch (binaryExpr.operand1.nodeType()) {
+                case TypeScript.NodeType.Name:
+                case TypeScript.NodeType.MemberAccessExpression:
+                  var symbol = compiler.semanticInfoChain.getSymbolForAST(binaryExpr.operand1, fileName);
+                  if (symbol !== null && impossibleConstants.indexOf(symbol) === -1) {
+                    impossibleConstants.push(symbol);
+                  }
+                  break;
+              }
+              break;
+
+            // Unary ++ and -- also count as assignments
+            case TypeScript.NodeType.PreIncrementExpression:
+            case TypeScript.NodeType.PreDecrementExpression:
+            case TypeScript.NodeType.PostIncrementExpression:
+            case TypeScript.NodeType.PostDecrementExpression:
+              var unaryExpr = <UnaryExpression>path.ast();
+              switch (unaryExpr.operand.nodeType()) {
+                case TypeScript.NodeType.Name:
+                case TypeScript.NodeType.MemberAccessExpression:
+                  var symbol = compiler.semanticInfoChain.getSymbolForAST(unaryExpr.operand, fileName);
+                  if (symbol !== null && impossibleConstants.indexOf(symbol) === -1) {
+                    impossibleConstants.push(symbol);
+                  }
+                  break;
+              }
+              break;
+          }
+        });
+      });
+
+      Emitter.detectedConstants = potentialConstants.filter(symbol => impossibleConstants.indexOf(symbol) === -1);
+    }
+
     // This will be set by tscc, which checks command line flags
     public static DEFINES: string[] = [];
+    public static DETECT_CONSTANTS: boolean = false;
+    private static detectedConstants: PullSymbol[] = [];
   }
 }

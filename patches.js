@@ -28,5 +28,12 @@ TypeScript.ForInStatement.prototype.emitWorker = function(emitter) {
   emitter.emitForInStatement(this);
 };
 
+TypeScript.TypeScriptCompiler.prototype.emitAll = function(emitAll) {
+  return function(ioHost, ioMapper) {
+    TypeScript.Emitter.detectConstants(this, ioHost);
+    return emitAll.call(this, ioHost, ioMapper);
+  };
+}(TypeScript.TypeScriptCompiler.prototype.emitAll);
+
 TypeScript.Indenter.indentStepString = '  ';
 TypeScript.Indenter.indentStep = 2;

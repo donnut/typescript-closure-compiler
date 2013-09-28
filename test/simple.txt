@@ -48,6 +48,7 @@ A.d = function (a) {
   new A();
   return a === v;
 };
+
 /** @type {number} */ A.b;
 
 /** @type {number} */ A.f = 0;
@@ -62,6 +63,7 @@ var B = function () {
   A.call(this);
   window['console'].log(A.prototype, this.c(/** @type {number} */ (window['foo'])));
 };
+
 __extends(B, A);
 
 /**
@@ -140,6 +142,7 @@ M.A.d = function (a) {
   new M.A();
   return a === M.v;
 };
+
 /** @type {number} */ M.A.b;
 
 /** @type {number} */ M.A.f = 0;
@@ -154,6 +157,7 @@ M.B = function () {
   M.A.call(this);
   window['console'].log(M.A.prototype);
 };
+
 __extends(M.B, M.A);
 
 /**
@@ -221,6 +225,7 @@ M.MM.A.d = function (a) {
   new M.MM.A();
   return a === M.MM.v;
 };
+
 /** @type {number} */ M.MM.A.b;
 
 /** @type {number} */ M.MM.A.f = 0;
@@ -235,6 +240,7 @@ M.MM.B = function () {
   M.MM.A.call(this);
   window['console'].log(M.MM.A.prototype);
 };
+
 __extends(M.MM.B, M.MM.A);
 
 /**

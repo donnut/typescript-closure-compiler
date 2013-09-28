@@ -34,6 +34,7 @@ Foo.prototype.foo = function (a, b) {
 var Bar = function () {
   Foo.apply(this, arguments);
 };
+
 __extends(Bar, Foo);
 
 /**
