@@ -27,3 +27,8 @@ M.Mustache.to_html('<div>{{name}}</div>', { 'name': 'foo' });
 M.Foo.bar();
 new M.Foo(1).foo;
 new M.Foo(2).baz();
+
+class Bar extends Foo {
+  baz() { super.baz(); }
+}
+new Bar(3).baz();
