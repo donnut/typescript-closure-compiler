@@ -56522,26 +56522,35 @@ else if (name.indexOf('.') < 0)
             return symbol.getDisplayName() + '$rest';
         };
 
-        Emitter.mangleSymbolName = function (symbol) {
-            var name = symbol.getDisplayName();
+        Emitter.shouldMangleSymbol = function (symbol) {
+            if (!Emitter.MANGLE_NAMES)
+                return false;
 
-            if (/^\d/.test(name))
-                return name;
+            if (/^\d/.test(symbol.getDisplayName()))
+                return false;
 
             // Ignore symbols not in the user's code
             var path = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
             if (path.length === 0)
-                return name;
+                return false;
             var rootPath = path[0].name;
             if (!/\.ts$/.test(rootPath) || /\.d\.ts$/.test(rootPath))
-                return name;
+                return false;
 
             for (var i = 0; i < path.length; i++) {
                 if (TypeScript.hasFlag(path[i].flags, TypeScript.DeclFlags.Ambient))
-                    return name;
+                    return false;
             }
 
-            return Emitter.mangleNameText(name);
+            if (Emitter.symbolsToAvoidMangling.indexOf(symbol) >= 0)
+                return false;
+
+            return true;
+        };
+
+        Emitter.mangleSymbolName = function (symbol) {
+            var name = symbol.getDisplayName();
+            return Emitter.shouldMangleSymbol(symbol) ? Emitter.mangleNameText(name) : name;
         };
 
         Emitter.getFullSymbolName = function (symbol, shouldMangle) {
@@ -56622,7 +56631,7 @@ else if (name.indexOf('.') < 0)
                     return '?Object';
                 }
                 if (type.getMembers().some(function (member) {
-                    return /[^A-Za-z0-9_$]/.test(member.name);
+                    return /[^A-Za-z0-9_$]/.test(member.getDisplayName());
                 })) {
                     return '?';
                 }
@@ -56762,7 +56771,7 @@ else
                         case TypeScript.NodeType.VariableDeclarator:
                             var varDecl = path.ast();
                             if (varDecl.init !== null) {
-                                var symbol = compiler.semanticInfoChain.getSymbolForAST(path.ast(), fileName);
+                                var symbol = compiler.semanticInfoChain.getSymbolForAST(varDecl, fileName);
                                 if (symbol !== null && potentialConstants.indexOf(symbol) === -1 && (symbol.type.isPrimitive() || symbol.type.getTypeName() === 'RegExp') && (symbol.kind === TypeScript.PullElementKind.Variable || symbol.kind === TypeScript.PullElementKind.Property && varDecl.isStatic())) {
                                     potentialConstants.push(symbol);
                                 }
@@ -56816,12 +56825,95 @@ else
                 return impossibleConstants.indexOf(symbol) === -1;
             });
         };
+
+        Emitter.preventManglingOfExternalSymbols = function (compiler, ioHost) {
+            if (!Emitter.MANGLE_NAMES)
+                return;
+
+            var symbolsToAvoidMangling = [];
+            var objectInterfaceType = null;
+
+            // Find the object type
+            compiler.semanticInfoChain.units.forEach(function (unit) {
+                unit.getTopLevelDecls().forEach(function (decl) {
+                    decl.getChildDecls().forEach(function (decl) {
+                        var symbol = decl.getSymbol();
+                        if (symbol !== null && symbol.kind === TypeScript.PullElementKind.Interface && Emitter.getFullSymbolName(symbol) === 'Object') {
+                            objectInterfaceType = symbol.type;
+                        }
+                    });
+                });
+            });
+
+            function preventManglingOfSymbol(symbol) {
+                if (symbolsToAvoidMangling.indexOf(symbol) < 0) {
+                    symbolsToAvoidMangling.push(symbol);
+                    if (symbol.type !== null)
+                        preventManglingOfType(symbol.type);
+                }
+            }
+
+            function preventManglingOfType(type) {
+                type.getMembers().forEach(preventManglingOfSymbol);
+            }
+
+            function getAllMembers(members, type) {
+                Array.prototype.push.apply(members, type.getMembers());
+                type.getExtendedTypes().forEach(function (type) {
+                    return getAllMembers(members, type);
+                });
+
+                if (objectInterfaceType !== null) {
+                    Array.prototype.push.apply(members, objectInterfaceType.getMembers());
+                }
+            }
+
+            function preventManglingOfInheritedMembers(type) {
+                var allMembers = [];
+                getAllMembers(allMembers, type);
+                type.getMembers().forEach(function (member) {
+                    if (allMembers.some(function (other) {
+                        return member.name === other.name && !Emitter.shouldMangleSymbol(other);
+                    })) {
+                        preventManglingOfSymbol(member);
+                    }
+                });
+            }
+
+            compiler.fileNameToDocument.getAllKeys().forEach(function (fileName) {
+                TypeScript.walkAST(compiler.getDocument(fileName).script, function (path, walker) {
+                    switch (path.nodeType()) {
+                        case TypeScript.NodeType.FunctionDeclaration:
+                        case TypeScript.NodeType.ClassDeclaration:
+                        case TypeScript.NodeType.InterfaceDeclaration:
+                        case TypeScript.NodeType.ModuleDeclaration:
+                        case TypeScript.NodeType.VariableDeclarator:
+                            var symbol = compiler.semanticInfoChain.getSymbolForAST(path.ast(), fileName);
+                            if (symbol !== null) {
+                                if (!Emitter.shouldMangleSymbol(symbol))
+                                    preventManglingOfSymbol(symbol);
+else if (symbol.type !== null)
+                                    preventManglingOfInheritedMembers(symbol.type);
+                            }
+                            break;
+                    }
+                });
+            });
+
+            Emitter.symbolsToAvoidMangling = symbolsToAvoidMangling;
+        };
+
+        Emitter.preprocessCompilerInput = function (compiler, ioHost) {
+            Emitter.detectConstants(compiler, ioHost);
+            Emitter.preventManglingOfExternalSymbols(compiler, ioHost);
+        };
         Emitter.EMPTY_STRING_LIST = [];
 
         Emitter.DEFINES = [];
         Emitter.MANGLE_NAMES = false;
         Emitter.DETECT_CONSTANTS = false;
         Emitter.detectedConstants = [];
+        Emitter.symbolsToAvoidMangling = [];
         return Emitter;
     })();
     TypeScript.Emitter = Emitter;
@@ -56862,7 +56954,7 @@ TypeScript.ForInStatement.prototype.emitWorker = function(emitter) {
 
 TypeScript.TypeScriptCompiler.prototype.emitAll = function(emitAll) {
   return function(ioHost, ioMapper) {
-    TypeScript.Emitter.detectConstants(this, ioHost);
+    TypeScript.Emitter.preprocessCompilerInput(this, ioHost);
     return emitAll.call(this, ioHost, ioMapper);
   };
 }(TypeScript.TypeScriptCompiler.prototype.emitAll);
