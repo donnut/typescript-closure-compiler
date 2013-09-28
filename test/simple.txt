@@ -294,6 +294,9 @@ M.MM.I.prototype.c = function (a) {
  */
 M.MM.f = function (index) {
   /** @type {number} */ var x = index;
+  /** @type {{ foo: ?function(new:I, number, number) }} */ var y = null;
+  /** @type {?} */ var z = null;
+  /** @type {?} */ var w = { 'foo bar': 0 };
   return '';
 };
 

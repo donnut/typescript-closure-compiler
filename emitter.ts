@@ -395,7 +395,7 @@ module TypeScript {
       // signature than the default one like document.createElement('canvas')
       var returnType: PullSymbol = this.getSymbolForAST(callNode);
       var symbol: PullSymbol = this.getSymbolForAST(callNode.target);
-      var emitCast: boolean = returnType !== null && symbol !== null && symbol.type.getCallSignatures().length > 1;
+      var emitCast: boolean = returnType !== null && symbol !== null && symbol.type.getCallSignatures().length > 1 && returnType.getTypeName() !== 'void';
       if (emitCast) {
         this.emitInlineComment(Emitter.getJSDocForType(returnType.type));
         this.writeToOutput('(');
@@ -822,7 +822,10 @@ module TypeScript {
 
     public emitVariableDeclaration(declaration: VariableDeclaration) {
       for (var i = 0, n = declaration.declarators.members.length; i < n; i++) {
-        if (i > 0) this.writeLineToOutput('');
+        if (i > 0) {
+          this.writeLineToOutput('');
+          this.emitIndent();
+        }
         declaration.declarators.members[i].emit(this);
       }
     }
@@ -1664,12 +1667,19 @@ module TypeScript {
       }
 
       // Function types
-      if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.FunctionType | TypeScript.PullElementKind.ConstructorType) &&
-          type.getCallSignatures().length > 0) {
+      if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.FunctionType) && type.getCallSignatures().length > 0) {
         var signature: PullSignatureSymbol = type.getCallSignatures()[0];
         return '?function(' + // TypeScript has nullable functions
           signature.parameters.map(arg => Emitter.formatJSDocType(arg.type)).join(', ') + ')' + (
           signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ': ' + Emitter.formatJSDocType(signature.returnType) : '');
+      }
+
+      // Constructor types
+      if (type.kind & TypeScript.PullElementKind.ConstructorType && type.getConstructSignatures().length > 0) {
+        var signature: PullSignatureSymbol = type.getConstructSignatures()[0];
+        return '?function(' + // TypeScript has nullable functions
+          (signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ['new:' + Emitter.formatJSDocType(signature.returnType)] :
+            Emitter.EMPTY_STRING_LIST).concat(signature.parameters.map(arg => Emitter.formatJSDocType(arg.type))).join(', ') + ')';
       }
 
       // Map types
@@ -1682,6 +1692,9 @@ module TypeScript {
       if (type.kind & TypeScript.PullElementKind.ObjectType || type.kind & TypeScript.PullElementKind.Interface) {
         if (type.getMembers().length === 0) {
           return '{}';
+        }
+        if (type.getMembers().some(member => /[^A-Za-z0-9_$]/.test(member.name))) {
+          return '?'; // Google Closure Compiler's type parser cannot quote names
         }
         return '{ ' + type.getMembers().map(member => member.name + ': ' + Emitter.formatJSDocType(member.type)).join(', ') + ' }';
       }
