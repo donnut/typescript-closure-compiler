@@ -5,6 +5,7 @@ declare class Foo {
   constructor(foo: number);
   static bar();
   baz();
+  toString(): string;
 }
 
 Mustache.to_html('<div>{{name}}</div>', { 'name': 'foo' });
@@ -20,6 +21,7 @@ declare module M {
     constructor(foo: number);
     static bar();
     baz();
+    toString(): string;
   }
 }
 
@@ -30,5 +32,12 @@ new M.Foo(2).baz();
 
 class Bar extends Foo {
   baz() { super.baz(); }
+  toString() { return ''; }
 }
 new Bar(3).baz();
+
+class Baz {
+  toString() { return ''; }
+}
+
+new Baz().toString();

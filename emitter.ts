@@ -1659,24 +1659,32 @@ module TypeScript {
       return symbol.getDisplayName() + '$rest';
     }
 
-    private static mangleSymbolName(symbol: PullSymbol): string {
+    private static shouldMangleSymbol(symbol: PullSymbol): boolean {
       var name: string = symbol.getDisplayName();
 
       // Object literal properties may be numbers
-      if (/^\d/.test(name)) return name;
+      if (/^\d/.test(name)) return false;
 
       // Ignore symbols not in the user's code
       var path: PullDecl[] = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
-      if (path.length === 0) return name;
+      if (path.length === 0) return false;
       var rootPath: string = path[0].name;
-      if (!/\.ts$/.test(rootPath) || /\.d\.ts$/.test(rootPath)) return name;
+      if (!/\.ts$/.test(rootPath) || /\.d\.ts$/.test(rootPath)) return false;
 
       // Also avoid mangling names specified with the "declare" keyword
       for (var i = 0; i < path.length; i++) {
-        if (TypeScript.hasFlag(path[i].flags, TypeScript.DeclFlags.Ambient)) return name;
+        if (TypeScript.hasFlag(path[i].flags, TypeScript.DeclFlags.Ambient)) return false;
       }
 
-      return Emitter.mangleNameText(name);
+      // Finally, avoid mangling names that are used in the type of something externally visible
+      if (Emitter.symbolsToAvoidMangling.indexOf(symbol) >= 0) return false;
+
+      return true;
+    }
+
+    private static mangleSymbolName(symbol: PullSymbol): string {
+      var name: string = symbol.getDisplayName();
+      return Emitter.shouldMangleSymbol(symbol) ? Emitter.mangleNameText(name) : name;
     }
 
     private static getFullSymbolName(symbol: PullSymbol, shouldMangle: ShouldMangle = ShouldMangle.YES): string {
@@ -1897,7 +1905,7 @@ module TypeScript {
             case TypeScript.NodeType.VariableDeclarator:
               var varDecl = <VariableDeclarator>path.ast();
               if (varDecl.init !== null) {
-                var symbol = compiler.semanticInfoChain.getSymbolForAST(path.ast(), fileName);
+                var symbol = compiler.semanticInfoChain.getSymbolForAST(varDecl, fileName);
                 if (symbol !== null && potentialConstants.indexOf(symbol) === -1 && (
                     symbol.type.isPrimitive() || symbol.type.getTypeName() === 'RegExp') && (
                     symbol.kind === TypeScript.PullElementKind.Variable ||
@@ -1956,8 +1964,79 @@ module TypeScript {
       Emitter.detectedConstants = potentialConstants.filter(symbol => impossibleConstants.indexOf(symbol) === -1);
     }
 
+    private static preventManglingOfExternalSymbols(compiler: TypeScriptCompiler, ioHost: EmitterIOHost) {
+      if (!Emitter.MANGLE_NAMES) return;
+
+      var symbolsToAvoidMangling: PullSymbol[] = [];
+      var objectInterfaceType: PullTypeSymbol = null;
+
+      // Find the object type
+      compiler.semanticInfoChain.units.forEach(unit => {
+        unit.getTopLevelDecls().forEach(decl => {
+          decl.getChildDecls().forEach(decl => {
+            var symbol = decl.getSymbol();
+            if (symbol !== null && symbol.kind === TypeScript.PullElementKind.Interface && Emitter.getFullSymbolName(symbol) === 'Object') {
+              objectInterfaceType = symbol.type;
+            }
+          });
+        });
+      });
+
+      function preventManglingOfSymbol(symbol: PullSymbol) {
+        if (symbolsToAvoidMangling.indexOf(symbol) < 0) {
+          symbolsToAvoidMangling.push(symbol);
+          if (symbol.type !== null) preventManglingOfType(symbol.type);
+        }
+      }
+
+      function preventManglingOfType(type: PullTypeSymbol) {
+        type.getMembers().forEach(preventManglingOfSymbol);
+      }
+
+      function getAllMembers(members: PullSymbol[], type: PullTypeSymbol) {
+        Array.prototype.push.apply(members, type.getMembers());
+        type.getExtendedTypes().forEach(type => getAllMembers(members, type));
+
+        // All types implicitly extend the Object interface
+        if (objectInterfaceType !== null) {
+          Array.prototype.push.apply(members, objectInterfaceType.getMembers());
+        }
+      }
+
+      function preventManglingOfInheritedMembers(type: PullTypeSymbol) {
+        var allMembers: PullSymbol[] = [];
+        getAllMembers(allMembers, type);
+        type.getMembers().forEach(member => {
+          if (allMembers.some(other => member.name === other.name && !Emitter.shouldMangleSymbol(other))) {
+            preventManglingOfSymbol(member);
+          }
+        });
+      }
+
+      compiler.fileNameToDocument.getAllKeys().forEach(fileName => {
+        TypeScript.walkAST(compiler.getDocument(fileName).script, (path, walker) => {
+          switch (path.nodeType()) {
+            case TypeScript.NodeType.FunctionDeclaration:
+            case TypeScript.NodeType.ClassDeclaration:
+            case TypeScript.NodeType.InterfaceDeclaration:
+            case TypeScript.NodeType.ModuleDeclaration:
+            case TypeScript.NodeType.VariableDeclarator:
+              var symbol = compiler.semanticInfoChain.getSymbolForAST(path.ast(), fileName);
+              if (symbol !== null) {
+                if (!Emitter.shouldMangleSymbol(symbol)) preventManglingOfSymbol(symbol);
+                else if (symbol.type !== null) preventManglingOfInheritedMembers(symbol.type);
+              }
+              break;
+          }
+        });
+      });
+
+      Emitter.symbolsToAvoidMangling = symbolsToAvoidMangling;
+    }
+
     public static preprocessCompilerInput(compiler: TypeScriptCompiler, ioHost: EmitterIOHost) {
       Emitter.detectConstants(compiler, ioHost);
+      Emitter.preventManglingOfExternalSymbols(compiler, ioHost);
     }
 
     // This will be set by tscc, which checks command line flags
@@ -1965,5 +2044,6 @@ module TypeScript {
     public static MANGLE_NAMES: boolean = false;
     public static DETECT_CONSTANTS: boolean = false;
     private static detectedConstants: PullSymbol[] = [];
+    private static symbolsToAvoidMangling: PullSymbol[] = [];
   }
 }

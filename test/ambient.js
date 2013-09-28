@@ -33,4 +33,26 @@ __extends(Bar, Foo);
 Bar.prototype.baz = function () {
   Foo.prototype.baz.call(this);
 };
+/**
+ * @returns {string}
+ */
+Bar.prototype.toString = function () {
+  return '';
+};
 new Bar(3).baz();
+
+/**
+ * @constructor
+ * @struct
+ */
+var Baz = function () {
+};
+
+/**
+ * @returns {string}
+ */
+Baz.prototype.toString = function () {
+  return '';
+};
+
+new Baz().toString();

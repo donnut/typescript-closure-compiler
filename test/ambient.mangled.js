@@ -33,4 +33,26 @@ __extends(Bar$mangled, Foo);
 Bar$mangled.prototype.baz = function () {
   Foo.prototype.baz.call(this);
 };
+/**
+ * @returns {string}
+ */
+Bar$mangled.prototype.toString = function () {
+  return '';
+};
 new Bar$mangled(3).baz();
+
+/**
+ * @constructor
+ * @struct
+ */
+var Baz$mangled = function () {
+};
+
+/**
+ * @returns {string}
+ */
+Baz$mangled.prototype.toString = function () {
+  return '';
+};
+
+new Baz$mangled().toString();
