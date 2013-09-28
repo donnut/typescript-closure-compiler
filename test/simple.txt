@@ -34,6 +34,7 @@ var A = function () {
  * @returns {boolean}
  */
 A.prototype.c = function (a) {
+  new A();
   return a === v;
 };
 /**
@@ -41,6 +42,7 @@ A.prototype.c = function (a) {
  * @returns {boolean}
  */
 A.d = function (a) {
+  new A();
   return a === v;
 };
 /**
@@ -137,6 +139,7 @@ M.A = function () {
  * @returns {boolean}
  */
 M.A.prototype.c = function (a) {
+  new M.A();
   return a === M.v;
 };
 /**
@@ -144,6 +147,7 @@ M.A.prototype.c = function (a) {
  * @returns {boolean}
  */
 M.A.d = function (a) {
+  new M.A();
   return a === M.v;
 };
 /**
@@ -229,6 +233,7 @@ M.MM.A = function () {
  * @returns {boolean}
  */
 M.MM.A.prototype.c = function (a) {
+  new M.MM.A();
   return a === M.MM.v;
 };
 /**
@@ -236,6 +241,7 @@ M.MM.A.prototype.c = function (a) {
  * @returns {boolean}
  */
 M.MM.A.d = function (a) {
+  new M.MM.A();
   return a === M.MM.v;
 };
 /**

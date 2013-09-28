@@ -1629,8 +1629,7 @@ module TypeScript {
     private static EMPTY_STRING_LIST: string[] = [];
 
     private static getFullSymbolName(symbol: PullSymbol): string {
-      var path: PullDecl[] = symbol.getDeclarations()[0].getParentPath();
-      if (path === null) return symbol.name;
+      var path: PullDecl[] = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
 
       // Count down to 1 because 0 is the file name
       for (var i = path.length - 1; i > 1; i--) {
@@ -1643,6 +1642,7 @@ module TypeScript {
           break;
         }
       }
+
       return path.slice(i).map(pullDecl => pullDecl.name).join('.');
     }
 
