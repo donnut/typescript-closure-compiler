@@ -4,6 +4,14 @@ var fs = require('fs');
 var path = require('path');
 var tsc = path.join(path.dirname(require.resolve('typescript')), 'tsc.js');
 
+var DEFINES = [];
+for (var i = 2; i + 1 < process.argv.length; i++) {
+  var arg = process.argv[i];
+  if (arg === '--define') {
+    DEFINES.push(process.argv.splice(i--, 2)[1]);
+  }
+}
+
 eval(fs
   .readFileSync(tsc, 'utf8')
   .replace(/batch\.batchCompile\(\);\s*$/, '')
@@ -12,5 +20,17 @@ eval(fs
 eval(fs.readFileSync(path.resolve(__dirname, 'emitter.js'), 'utf8'));
 eval(fs.readFileSync(path.resolve(__dirname, 'patches.js'), 'utf8'));
 
+TypeScript.OptionsParser.prototype.printUsage = function(printUsage) {
+  var optionsText = 'TypeScript.getLocalizedText(TypeScript.DiagnosticCode.Options, null)';
+  var closureCompilerOptions = [
+    'Google Closure Compiler options:',
+    '  --define VAR                  Generate a @define annotation for VAR',
+    '',
+    ''
+  ].join('\n');
+  return eval('(' + printUsage.toString().replace(optionsText, JSON.stringify(closureCompilerOptions) + ' + ' + optionsText) + ')');
+}(TypeScript.OptionsParser.prototype.printUsage);
+
+TypeScript.Emitter.DEFINES = DEFINES;
 process.mainModule.filename = tsc;
 batch.batchCompile();

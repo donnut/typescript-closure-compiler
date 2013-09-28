@@ -202,96 +202,8 @@ module TypeScript {
       this.document = document;
     }
 
-    public importStatementShouldBeEmitted(importDeclAST: ImportDeclaration, unitPath?: string): boolean {
-      var importDecl = this.semanticInfoChain.getDeclForAST(importDeclAST, this.document.fileName);
-      var pullSymbol = <PullTypeAliasSymbol>importDecl.getSymbol();
-      if (!importDeclAST.isExternalImportDeclaration()) {
-        if (pullSymbol.getExportAssignedValueSymbol()) {
-          return true;
-        }
-        var containerSymbol = pullSymbol.getExportAssignedContainerSymbol();
-        if (containerSymbol && containerSymbol.getInstanceSymbol()) {
-          return true;
-        }
-      }
-
-      return pullSymbol.isUsedAsValue;
-    }
-
     public emitImportDeclaration(importDeclAST: ImportDeclaration) {
-      if (this.importStatementShouldBeEmitted(importDeclAST)) {
-        var prevModAliasId = this.modAliasId;
-        var prevFirstModAlias = this.firstModAlias;
-
-        this.emitComments(importDeclAST, true);
-
-        var importDecl = this.semanticInfoChain.getDeclForAST(importDeclAST, this.document.fileName);
-        var importSymbol = <PullTypeAliasSymbol>importDecl.getSymbol();
-
-        var parentSymbol = importSymbol.getContainer();
-        var parentKind = parentSymbol ? parentSymbol.kind : TypeScript.PullElementKind.None;
-        var associatedParentSymbol = parentSymbol ? parentSymbol.getAssociatedContainerType() : null;
-        var associatedParentSymbolKind = associatedParentSymbol ? associatedParentSymbol.kind : TypeScript.PullElementKind.None;
-
-        var needsPropertyAssignment = false;
-        var usePropertyAssignmentInsteadOfVarDecl = false;
-        var moduleNamePrefix: string;
-
-        if (TypeScript.hasFlag(importDecl.flags, TypeScript.PullElementFlags.Exported) &&
-          (parentKind == TypeScript.PullElementKind.Container ||
-          parentKind === TypeScript.PullElementKind.DynamicModule ||
-          associatedParentSymbolKind === TypeScript.PullElementKind.Container ||
-          associatedParentSymbolKind === TypeScript.PullElementKind.DynamicModule)) {
-          if (importSymbol.getExportAssignedTypeSymbol() || importSymbol.getExportAssignedContainerSymbol()) {
-            // Type or container assignment that is exported
-            needsPropertyAssignment = true;
-          } else {
-            var valueSymbol = importSymbol.getExportAssignedValueSymbol();
-            if (valueSymbol &&
-              (valueSymbol.kind == TypeScript.PullElementKind.Method || valueSymbol.kind == TypeScript.PullElementKind.Function)) {
-              needsPropertyAssignment = true;
-            } else {
-              usePropertyAssignmentInsteadOfVarDecl = true;
-            }
-          }
-
-          // Calculate what name prefix to use
-          if (this.emitState.container === EmitContainer.DynamicModule) {
-            moduleNamePrefix = "exports."
-            }
-          else {
-            moduleNamePrefix = this.moduleName + ".";
-          }
-        }
-
-        this.recordSourceMappingStart(importDeclAST);
-        if (usePropertyAssignmentInsteadOfVarDecl) {
-          this.writeToOutput(moduleNamePrefix);
-        } else {
-          this.writeToOutput("var ");
-        }
-        this.writeToOutput(importDeclAST.id.actualText + " = ");
-        this.modAliasId = importDeclAST.id.actualText;
-        this.firstModAlias = importDeclAST.firstAliasedModToString();
-        var aliasAST = importDeclAST.alias.nodeType() === TypeScript.NodeType.TypeRef ? (<TypeReference>importDeclAST.alias).term : importDeclAST.alias;
-
-        this.emitJavascript(aliasAST, false);
-        this.recordSourceMappingEnd(importDeclAST);
-        this.writeToOutput(";");
-
-        if (needsPropertyAssignment) {
-          this.writeLineToOutput("");
-          this.emitIndent();
-          this.recordSourceMappingStart(importDeclAST);
-          this.writeToOutput(moduleNamePrefix + importDeclAST.id.actualText + " = " + importDeclAST.id.actualText);
-          this.recordSourceMappingEnd(importDeclAST);
-          this.writeToOutput(";");
-        }
-        this.emitComments(importDeclAST, false);
-
-        this.modAliasId = prevModAliasId;
-        this.firstModAlias = prevFirstModAlias;
-      }
+      throw new Error('Import statements are not supported');
     }
 
     public setSourceMappings(mapper: SourceMapper) {
@@ -497,40 +409,8 @@ module TypeScript {
       }
     }
 
-    public getConstantDecl(dotExpr: BinaryExpression): BoundDeclInfo {
-      var pullSymbol = this.semanticInfoChain.getSymbolForAST(dotExpr, this.document.fileName);
-      if (pullSymbol && pullSymbol.hasFlag(TypeScript.PullElementFlags.Constant)) {
-        var pullDecls = pullSymbol.getDeclarations();
-        if (pullDecls.length === 1) {
-          var pullDecl = pullDecls[0];
-          var ast = this.semanticInfoChain.getASTForDecl(pullDecl);
-          if (ast && ast.nodeType() === TypeScript.NodeType.VariableDeclarator) {
-            return { boundDecl: <VariableDeclarator>ast, pullDecl: pullDecl };
-          }
-        }
-      }
-
-      return null;
-    }
-
+    // Enum constants are handled by Google Closure Compiler
     public tryEmitConstant(dotExpr: BinaryExpression) {
-      if (!this.emitOptions.compilationSettings.propagateEnumConstants) {
-        return false;
-      }
-      var propertyName = <Identifier>dotExpr.operand2;
-      var boundDeclInfo = this.getConstantDecl(dotExpr);
-      if (boundDeclInfo) {
-        var value = boundDeclInfo.boundDecl.constantValue;
-        if (value !== null) {
-          this.writeToOutput(value.toString());
-          var comment = " /* ";
-          comment += propertyName.actualText;
-          comment += " */";
-          this.writeToOutput(comment);
-          return true;
-        }
-      }
-
       return false;
     }
 
@@ -545,7 +425,7 @@ module TypeScript {
       var symbol: PullSymbol = this.getSymbolForAST(callNode.target);
       var emitCast: boolean = returnType !== null && symbol !== null && symbol.type.getCallSignatures().length > 1;
       if (emitCast) {
-        this.emitInlineTypeComment(returnType.type);
+        this.emitInlineComment(Emitter.getJSDocForType(returnType.type));
         this.writeToOutput('(');
       }
       if (target.nodeType() === TypeScript.NodeType.FunctionDeclaration) {
@@ -886,7 +766,7 @@ module TypeScript {
       // Enum
       if (pullDecl.kind === TypeScript.PullElementKind.Enum) {
         var startLine = true;
-        this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(moduleDecl), Emitter.getJSDocForEnum(moduleDecl)));
+        this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(moduleDecl), Emitter.getJSDocForEnumDeclaration(moduleDecl)));
         this.emitFullSymbolVariableStatement(this.getSymbolForAST(moduleDecl));
         this.writeLineToOutput(' = {');
         this.indenter.increaseIndent();
@@ -979,30 +859,6 @@ module TypeScript {
       }
     }
 
-    public varListCount(): number {
-      return this.varListCountStack[this.varListCountStack.length - 1];
-    }
-
-    // Emits "var " if it is allowed
-    public emitVarDeclVar() {
-      // If it is var list of form var a, b, c = emit it only if count > 0 - which will be when emitting first var
-      // If it is var list of form  var a = varList count will be 0
-      if (this.varListCount() >= 0) {
-        this.writeToOutput("var ");
-        this.setInVarBlock(-this.varListCount());
-      }
-      return true;
-    }
-
-    public onEmitVar() {
-      if (this.varListCount() > 0) {
-        this.setInVarBlock(this.varListCount() - 1);
-      }
-      else if (this.varListCount() < 0) {
-        this.setInVarBlock(this.varListCount() + 1);
-      }
-    }
-
     public emitVariableDeclaration(declaration: VariableDeclaration) {
       for (var i = 0, n = declaration.declarators.members.length; i < n; i++) {
         if (i > 0) this.writeLineToOutput('');
@@ -1016,7 +872,7 @@ module TypeScript {
       var parentKind = parentSymbol ? parentSymbol.kind : TypeScript.PullElementKind.None;
 
       this.emitComments(varDecl, true);
-      this.emitInlineTypeComment(symbol.type);
+      this.emitInlineComment(this.getJSDocForVariableDeclaration(varDecl));
       this.recordSourceMappingStart(varDecl);
 
       if (parentKind === TypeScript.PullElementKind.Class) {
@@ -1101,124 +957,20 @@ module TypeScript {
       return false;
     }
 
-    public emitName(name: Identifier, addThis: boolean) {
+    public emitName(name: Identifier, isNotMemberAccess: boolean) {
       this.emitComments(name, true);
       this.recordSourceMappingStart(name);
+
       if (!name.isMissing()) {
         var pullSymbol = this.semanticInfoChain.getSymbolForAST(name, this.document.fileName);
         if (!pullSymbol) {
           pullSymbol = this.semanticInfoChain.anyTypeSymbol;
         }
-        var pullSymbolAlias = this.semanticInfoChain.getAliasSymbolForAST(name, this.document.fileName);
-        if (pullSymbol && pullSymbolAlias) {
-          var symbolToCompare = this.resolvingContext.resolvingTypeReference ?
-            pullSymbolAlias.getExportAssignedTypeSymbol() :
-            pullSymbolAlias.getExportAssignedValueSymbol();
 
-          if (pullSymbol == symbolToCompare) {
-            pullSymbol = pullSymbolAlias;
-            pullSymbolAlias = null;
-          }
-        }
-
-        var pullSymbolKind = pullSymbol.kind;
-        var isLocalAlias = pullSymbolAlias && (pullSymbolAlias.getDeclarations()[0].getParentDecl() == this.getEnclosingDecl());
-        if (addThis && (this.emitState.container !== EmitContainer.Args) && pullSymbol) {
-          var pullSymbolContainer = pullSymbol.getContainer();
-
-          if (pullSymbolContainer) {
-            var pullSymbolContainerKind = pullSymbolContainer.kind;
-
-            if (pullSymbolContainerKind === TypeScript.PullElementKind.Class) {
-              if (pullSymbol.hasFlag(TypeScript.PullElementFlags.Static)) {
-                // This is static symbol
-                this.writeToOutput(pullSymbolContainer.getName() + ".");
-              }
-              else if (pullSymbolKind === TypeScript.PullElementKind.Property) {
-                this.emitThis();
-                this.writeToOutput(".");
-              }
-            }
-            else if (TypeScript.PullHelpers.symbolIsModule(pullSymbolContainer)) {
-              // TODO: Wow all of this other code is a mess, try to simplify
-              // everything else to just a single call to getFullSymbolName()
-              this.writeToOutput(Emitter.getFullSymbolName(pullSymbol));
-              this.recordSourceMappingEnd(name);
-              this.emitComments(name, false);
-              return;
-            }
-            else if (TypeScript.PullHelpers.symbolIsModule(pullSymbolContainer) || pullSymbolContainerKind === TypeScript.PullElementKind.Enum ||
-                 pullSymbolContainer.hasFlag(TypeScript.PullElementFlags.InitializedModule | TypeScript.PullElementFlags.InitializedEnum)) {
-              // If property or, say, a constructor being invoked locally within the module of its definition
-              if (pullSymbolKind === TypeScript.PullElementKind.Property || pullSymbolKind === TypeScript.PullElementKind.EnumMember) {
-                this.writeToOutput(pullSymbolContainer.getDisplayName() + ".");
-              }
-              else if (pullSymbol.hasFlag(TypeScript.PullElementFlags.Exported) &&
-                   pullSymbolKind === TypeScript.PullElementKind.Variable &&
-                !pullSymbol.hasFlag(TypeScript.PullElementFlags.InitializedModule | TypeScript.PullElementFlags.InitializedEnum)) {
-                this.writeToOutput(pullSymbolContainer.getDisplayName() + ".");
-              }
-              else if (pullSymbol.hasFlag(TypeScript.PullElementFlags.Exported) && !this.symbolIsUsedInItsEnclosingContainer(pullSymbol)) {
-                this.writeToOutput(pullSymbolContainer.getDisplayName() + ".");
-              }
-              // else if (pullSymbol.hasFlag(TypeScript.PullElementFlags.Exported) &&
-              //       pullSymbolKind !== TypeScript.PullElementKind.ConstructorMethod &&
-              //       !pullSymbol.hasFlag(TypeScript.PullElementFlags.ClassConstructorVariable)) {
-              //     this.writeToOutput(pullSymbolContainer.getName() + ".");
-              // }
-            }
-            else if (pullSymbolContainerKind === TypeScript.PullElementKind.DynamicModule ||
-                 pullSymbolContainer.hasFlag(TypeScript.PullElementFlags.InitializedDynamicModule)) {
-              if (pullSymbolKind === TypeScript.PullElementKind.Property) {
-                // If dynamic module
-                this.writeToOutput("exports.");
-              }
-              else if (pullSymbol.hasFlag(TypeScript.PullElementFlags.Exported) &&
-                   !isLocalAlias &&
-                   !pullSymbol.hasFlag(TypeScript.PullElementFlags.ImplicitVariable) &&
-                   pullSymbol.kind !== TypeScript.PullElementKind.ConstructorMethod &&
-                   pullSymbol.kind !== TypeScript.PullElementKind.Class &&
-                   pullSymbol.kind !== TypeScript.PullElementKind.Enum) {
-                this.writeToOutput("exports.");
-              }
-            }
-            else if (pullSymbolKind === TypeScript.PullElementKind.Property) {
-              if (pullSymbolContainer.kind === TypeScript.PullElementKind.Class) {
-                this.emitThis();
-                this.writeToOutput(".");
-              }
-            }
-            else {
-              var pullDecls = pullSymbol.getDeclarations();
-              var emitContainerName = true;
-              for (var i = 0; i < pullDecls.length; i++) {
-                if (pullDecls[i].getScriptName() === this.document.fileName) {
-                  emitContainerName = false;
-                }
-              }
-              if (emitContainerName) {
-                this.writeToOutput(pullSymbolContainer.getName() + ".");
-              }
-            }
-          }
-        }
-
-        // If it's a dynamic module, we need to print the "require" invocation
-        if (pullSymbol && pullSymbolKind === TypeScript.PullElementKind.DynamicModule) {
-          if (this.emitOptions.compilationSettings.moduleGenTarget === ModuleGenTarget.Asynchronous) {
-            this.writeToOutput("__" + this.modAliasId + "__");
-          }
-          else {
-            var moduleDecl: ModuleDeclaration = <ModuleDeclaration>this.semanticInfoChain.getASTForSymbol(pullSymbol, this.document.fileName);
-            var modPath = name.actualText;
-            var isAmbient = pullSymbol.hasFlag(TypeScript.PullElementFlags.Ambient);
-            modPath = isAmbient ? modPath : this.firstModAlias ? this.firstModAlias : quoteBaseName(modPath);
-            modPath = isAmbient ? modPath : (!TypeScript.isRelative(TypeScript.stripQuotes(modPath)) ? TypeScript.quoteStr("./" + TypeScript.stripQuotes(modPath)) : modPath);
-            this.writeToOutput("require(" + modPath + ")");
-          }
-        }
-        else {
-          this.writeToOutput(name.actualText);
+        if (isNotMemberAccess) {
+          this.writeToOutput(Emitter.getFullSymbolName(pullSymbol));
+        } else {
+          this.writeToOutput(pullSymbol.name);
         }
       }
 
@@ -1749,7 +1501,7 @@ module TypeScript {
 
             this.emitIndent();
             this.recordSourceMappingStart(varDecl);
-            this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(varDecl), Emitter.getJSDocForType(this.getSymbolForAST(varDecl).type)));
+            this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(varDecl), this.getJSDocForVariableDeclaration(varDecl)));
             this.emitFullSymbolVariableStatement(this.getSymbolForAST(varDecl));
 
             if (varDecl.init !== null) {
@@ -1879,7 +1631,7 @@ module TypeScript {
 
     public emitUnaryExpression(ast: UnaryExpression, emitWorker: (emitter: Emitter) => void) {
       if (ast.nodeType() === TypeScript.NodeType.CastExpression) {
-        this.emitInlineTypeComment(this.getSymbolForAST(ast).type);
+        this.emitInlineComment(Emitter.getJSDocForType(this.getSymbolForAST(ast).type));
         this.writeToOutput('(');
         ast.operand.emit(this);
         this.writeToOutput(')');
@@ -1950,7 +1702,7 @@ module TypeScript {
     }
 
     public emitInterfaceDeclaration(interfaceDecl: InterfaceDeclaration) {
-      this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(interfaceDecl), this.getJSDocForInterface(interfaceDecl)));
+      this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(interfaceDecl), this.getJSDocForInterfaceDeclaration(interfaceDecl)));
       this.emitFullSymbolVariableStatement(this.getSymbolForAST(interfaceDecl));
       this.writeLineToOutput(' = function () {');
       this.emitIndent();
@@ -1965,7 +1717,7 @@ module TypeScript {
         if (memberDecl.nodeType() === TypeScript.NodeType.VariableDeclarator) {
           var symbol: PullSymbol = this.getSymbolForAST(memberDecl);
           this.writeLineToOutput('');
-          this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(memberDecl), Emitter.getJSDocForType(symbol.type)));
+          this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(memberDecl), this.getJSDocForVariableDeclaration(<VariableDeclarator>memberDecl)));
           this.writeLineToOutput(Emitter.getFullSymbolName(this.getSymbolForAST(interfaceDecl)) + '.prototype.' + symbol.name + ';');
         }
 
@@ -1981,6 +1733,7 @@ module TypeScript {
 
     private static getFullSymbolName(symbol: PullSymbol): string {
       var path: PullDecl[] = symbol.getDeclarations()[0].getParentPath();
+      if (path === null) return symbol.name;
 
       // Count down to 1 because 0 is the file name
       for (var i = path.length - 1; i > 1; i--) {
@@ -2088,7 +1841,7 @@ module TypeScript {
       return ['@returns {' + Emitter.formatJSDocType(returnType) + '}'];
     }
 
-    private static getJSDocForEnum(moduleDecl: ModuleDeclaration): string[] {
+    private static getJSDocForEnumDeclaration(moduleDecl: ModuleDeclaration): string[] {
       return ['@enum {number}'];
     }
 
@@ -2103,8 +1856,15 @@ module TypeScript {
             : Emitter.EMPTY_STRING_LIST);
     }
 
-    private getJSDocForInterface(interfaceDecl: InterfaceDeclaration) {
+    private getJSDocForInterfaceDeclaration(interfaceDecl: InterfaceDeclaration) {
       return ['@interface'].concat(this.getJSDocForExtends(interfaceDecl.extendsList));
+    }
+
+    private getJSDocForVariableDeclaration(varDecl: VariableDeclarator): string[] {
+      var symbol: PullSymbol = this.getSymbolForAST(varDecl);
+      return Emitter.DEFINES.indexOf(Emitter.getFullSymbolName(symbol)) >= 0
+        ? ['@define {' + Emitter.formatJSDocType(symbol.type) + '}']
+        : Emitter.getJSDocForType(symbol.type);
     }
 
     private static joinJSDocComments(first: string[], second: string[]): string[] {
@@ -2126,8 +1886,10 @@ module TypeScript {
       this.emitIndent();
     }
 
-    private emitInlineTypeComment(type: PullTypeSymbol) {
-      this.writeToOutput('/** ' + Emitter.getJSDocForType(type).join('') + ' */ ');
+    private emitInlineComment(jsDoc: string[]) {
+      this.writeToOutput('/** ' + jsDoc.join(' ') + ' */ ');
     }
+
+    public static DEFINES: string[] = [];
   }
 }
