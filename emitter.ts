@@ -1652,7 +1652,7 @@ module TypeScript {
     }
 
     private static mangleVarArgSymbolName(symbol: PullSymbol): string {
-      return symbol.getDisplayName() + '$splat';
+      return symbol.getDisplayName() + '$rest';
     }
 
     private static mangleSymbolName(symbol: PullSymbol): string {
@@ -1662,8 +1662,14 @@ module TypeScript {
       if (/^\d/.test(name)) return name;
 
       // Ignore symbols not in the user's code
-      var rootPath: string = TypeScript.getPathToDecl(symbol.getDeclarations()[0])[0].name;
+      var path: PullDecl[] = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
+      var rootPath: string = path[0].name;
       if (!/\.ts$/.test(rootPath) || /\.d\.ts$/.test(rootPath)) return name;
+
+      // Also avoid mangling names specified with the "declare" keyword
+      for (var i = 0; i < path.length; i++) {
+        if (TypeScript.hasFlag(path[i].flags, TypeScript.DeclFlags.Ambient)) return name;
+      }
 
       return Emitter.mangleNameText(name);
     }
@@ -1693,6 +1699,12 @@ module TypeScript {
       return parts.length === 1 ? parts[0] : '(' + parts.join('|') + ')';
     }
 
+    private static formatJSDocArgumentType(arg: PullSymbol): string {
+      return arg.isVarArg
+        ? '...[' + Emitter.stripOffArrayType(Emitter.formatJSDocType(arg.type)) + ']'
+        : Emitter.formatJSDocType(arg.type);
+    }
+
     private static formatJSDocType(type: PullTypeSymbol, ignoreName: IgnoreName = IgnoreName.NO): string {
       // Google Closure Compiler's type system is not powerful enough to work
       // with type parameters, especially type parameters with constraints
@@ -1715,7 +1727,7 @@ module TypeScript {
       if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.Interface | TypeScript.PullElementKind.FunctionType) &&
           type.getCallSignatures().length > 0) {
         return Emitter.formatJSDocUnionType(type.getCallSignatures().map(signature => '?function(' + // TypeScript has nullable functions
-          signature.parameters.map(arg => Emitter.formatJSDocType(arg.type)).join(', ') + ')' + (
+          signature.parameters.map(arg => Emitter.formatJSDocArgumentType(arg)).join(', ') + ')' + (
           signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ': ' + Emitter.formatJSDocType(signature.returnType) : '')));
       }
 
@@ -1723,7 +1735,7 @@ module TypeScript {
       if (type.kind & TypeScript.PullElementKind.ConstructorType && type.getConstructSignatures().length > 0) {
         return Emitter.formatJSDocUnionType(type.getConstructSignatures().map(signature => '?function(' + // TypeScript has nullable functions
           (signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ['new:' + Emitter.formatJSDocType(signature.returnType)] :
-            Emitter.EMPTY_STRING_LIST).concat(signature.parameters.map((arg: PullSymbol) => Emitter.formatJSDocType(arg.type))).join(', ') + ')'));
+            Emitter.EMPTY_STRING_LIST).concat(signature.parameters.map((arg: PullSymbol) => Emitter.formatJSDocArgumentType(arg))).join(', ') + ')'));
       }
 
       // Map types
@@ -1770,13 +1782,14 @@ module TypeScript {
       return ['@const {' + Emitter.formatJSDocType(type) + '}'];
     }
 
+    private static stripOffArrayType(type: string): string {
+      return type.replace(/^Array\.<(.*)>$/, '$1');
+    }
+
     private static getJSDocForArguments(symbols: PullSymbol[]): string[] {
       return symbols.map(symbol => {
         var type: string = Emitter.formatJSDocType(symbol.type);
-        if (symbol.isVarArg) {
-          type = type.replace(/^Array\.<(.*)>$/, '...$1');
-          return '@param {' + type + '} ' + Emitter.mangleVarArgSymbolName(symbol);
-        }
+        if (symbol.isVarArg) return '@param {...' + Emitter.stripOffArrayType(type) + '} ' + Emitter.mangleVarArgSymbolName(symbol);
         if (symbol.isOptional) type += '=';
         return '@param {' + type + '} ' + Emitter.mangleSymbolName(symbol);
       });

@@ -167,6 +167,9 @@ module M {
     function test3(a: boolean, b = '', c = 0) {
     }
 
+    var test4: (...foo) => void = null;
+    var test5: (...foo: number[]) => void = null;
+
     class Test1 {
       foo = 1;
       static bar = 2;

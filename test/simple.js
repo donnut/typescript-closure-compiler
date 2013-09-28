@@ -327,10 +327,10 @@ M.MM.CallFoo;
 M.MM.CallFoo2;
 
 /**
- * @param {...number} foo$splat
+ * @param {...number} foo$rest
  * @returns {number}
  */
-M.MM.test1 = function (foo$splat) {
+M.MM.test1 = function (foo$rest) {
   /** @type {Array.<number>} */ var foo = [];
   for (var _i = 0; _i < arguments.length; _i++) {
     foo[_i] = arguments[_i];
@@ -341,10 +341,10 @@ M.MM.test1 = function (foo$splat) {
 /**
  * @param {string} a
  * @param {string} b
- * @param {...number} foo$splat
+ * @param {...number} foo$rest
  * @returns {number}
  */
-M.MM.test2 = function (a, b, foo$splat) {
+M.MM.test2 = function (a, b, foo$rest) {
   /** @type {Array.<number>} */ var foo = [];
   for (var _i = 0; _i < arguments.length - 2; _i++) {
     foo[_i] = arguments[_i + 2];
@@ -361,6 +361,9 @@ M.MM.test3 = function (a, b, c) {
   if (typeof b === "undefined") b = '';
   if (typeof c === "undefined") c = 0;
 };
+
+/** @type {?function(...[?])} */ M.MM.test4 = null;
+/** @type {?function(...[number])} */ M.MM.test5 = null;
 
 /**
  * @param {number=} baz

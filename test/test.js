@@ -12,9 +12,9 @@ fs.readdirSync(__dirname).sort().forEach(function(test) {
   it(test, function(done) {
     this.timeout(0);
     var tsFile = path.resolve(__dirname, test);
-    var txtFile = path.resolve(__dirname, test.replace(/\.ts$/, '.txt'));
-    var jsFile = path.resolve(__dirname, '.' + test.replace(/\.ts$/, '.js'));
-    var flags = [tsFile, '--out', jsFile];
+    var jsFile = path.resolve(__dirname, test.replace(/\.ts$/, '.js'));
+    var compiledFile = path.resolve(__dirname, '.' + test.replace(/\.ts$/, '.js'));
+    var flags = [tsFile, '--out', compiledFile];
     var customFlags = /^\/\/ compile with ([^\n]*)\n/.exec(fs.readFileSync(tsFile, 'utf8'));
     if (customFlags !== null) flags = flags.concat(customFlags[1].trim().split(/\s+/));
     var process = child_process.spawn(tsc, flags);
@@ -25,8 +25,8 @@ fs.readdirSync(__dirname).sort().forEach(function(test) {
     process.on('close', function(code) {
       assert.strictEqual(stderr, '');
       assert.strictEqual(code, 0);
-      assert.strictEqual(fs.readFileSync(jsFile, 'utf8'), fs.readFileSync(txtFile, 'utf8'));
-      fs.unlinkSync(jsFile);
+      assert.strictEqual(fs.readFileSync(compiledFile, 'utf8'), fs.readFileSync(jsFile, 'utf8'));
+      fs.unlinkSync(compiledFile);
       done();
     });
   });
