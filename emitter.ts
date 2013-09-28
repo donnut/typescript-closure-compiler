@@ -1659,7 +1659,7 @@ module TypeScript {
       // Object types and interfaces
       if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.Interface)) {
         if (type.getMembers().length === 0) {
-          return '?{}'; // Object types are nullable in TypeScript
+          return '?Object'; // Object types are nullable in TypeScript
         }
         if (type.getMembers().some(member => /[^A-Za-z0-9_$]/.test(member.name))) {
           return '?'; // Google Closure Compiler's type parser cannot quote names

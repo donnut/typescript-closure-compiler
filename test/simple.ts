@@ -1,3 +1,5 @@
+var empty = {};
+
 enum Foo { ABC, XYZ = 100 }
 
 var v = 0;
