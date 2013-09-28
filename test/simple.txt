@@ -297,8 +297,21 @@ M.MM.f = function (index) {
   /** @type {?{ foo: ?function(new:I, number, number) }} */ var y = null;
   /** @type {?} */ var z = null;
   /** @type {?} */ var w = { 'foo bar': 0 };
+  /** @type {?function(): ?} */ var functionExpression1 = function foo() {
+    return foo;
+  };
+  /** @type {?{ foo: ?function(): ? }} */ var functionExpression2 = { foo: function bar() {
+      return bar;
+    } };
   return '';
 };
+
+/** @type {?function(): ?} */ M.MM.functionExpression1 = function foo() {
+  return foo;
+};
+/** @type {?{ foo: ?function(): ? }} */ M.MM.functionExpression2 = { foo: function bar() {
+    return bar;
+  } };
 
 M.MM.tryCatch1 = function () {
   try  {

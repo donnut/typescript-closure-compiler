@@ -436,7 +436,7 @@ module TypeScript {
       }
     }
 
-    public emitInnerFunction(funcDecl: FunctionDeclaration, printName: boolean, includePreComments = true) {
+    public emitInnerFunction(funcDecl: FunctionDeclaration, printName: boolean, includePreComments = true, isFunctionExpression = false) {
 
       /// REVIEW: The code below causes functions to get pushed to a newline in cases where they shouldn't
       /// such as:
@@ -451,7 +451,7 @@ module TypeScript {
       //  emitIndent();
       //}
 
-      var pullDecl = this.semanticInfoChain.getDeclForAST(funcDecl, this.document.fileName);
+      var pullDecl = this.getDeclForAST(funcDecl);
 
       // We have no way of knowing if the current function is used as an expression or a statement, so as to enusre that the emitted
       // JavaScript is always valid, add an extra parentheses for unparenthesized function expressions
@@ -478,7 +478,7 @@ module TypeScript {
         needSemicolon = true;
       }
 
-      else if (printName) {
+      else if (printName && !isFunctionExpression) {
         var id = funcDecl.getNameText();
         if (id && !funcDecl.isAccessor()) {
           this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(funcDecl), this.getJSDocForFunctionDeclaration(funcDecl)));
@@ -490,6 +490,13 @@ module TypeScript {
 
       if (!(funcDecl.isAccessor() && containerKind !== TypeScript.PullElementKind.Class && containerKind !== TypeScript.PullElementKind.ConstructorType)) {
         this.writeToOutput("function ");
+      }
+
+      if (printName && isFunctionExpression) {
+        var id = funcDecl.getNameText();
+        if (id && !funcDecl.isAccessor()) {
+          this.writeToOutput(id);
+        }
       }
 
       this.writeToOutput("(");
@@ -635,7 +642,7 @@ module TypeScript {
     }
 
     public shouldCaptureThis(ast: AST) {
-      var decl = this.semanticInfoChain.getDeclForAST(ast, this.document.fileName);
+      var decl = this.getDeclForAST(ast);
       if (decl) {
         return (decl.flags & TypeScript.PullElementFlags.MustCaptureThis) === TypeScript.PullElementFlags.MustCaptureThis;
       }
@@ -644,7 +651,7 @@ module TypeScript {
     }
 
     public emitModule(moduleDecl: ModuleDeclaration) {
-      var pullDecl = this.semanticInfoChain.getDeclForAST(moduleDecl, this.document.fileName);
+      var pullDecl = this.getDeclForAST(moduleDecl);
 
       var svModuleName = this.moduleName;
       this.moduleName = moduleDecl.name.actualText;
@@ -744,10 +751,10 @@ module TypeScript {
 
       var funcName = funcDecl.getNameText();
 
-      if (((temp !== EmitContainer.Constructor) ||
-        ((funcDecl.getFunctionFlags() & TypeScript.FunctionFlags.Method) === TypeScript.FunctionFlags.None))) {
+      if (temp !== EmitContainer.Constructor || (funcDecl.getFunctionFlags() & TypeScript.FunctionFlags.Method) === TypeScript.FunctionFlags.None) {
+        var isFunctionExpression = TypeScript.hasFlag(funcDecl.getFunctionFlags(), TypeScript.FunctionFlags.IsFunctionExpression);
         this.recordSourceMappingStart(funcDecl);
-        this.emitInnerFunction(funcDecl, (funcDecl.name && !funcDecl.name.isMissing()));
+        this.emitInnerFunction(funcDecl, funcDecl.name && !funcDecl.name.isMissing(), /* includePreComments: */ false, isFunctionExpression);
       }
       this.setContainer(temp);
       this.thisFunctionDeclaration = tempFnc;
@@ -819,7 +826,7 @@ module TypeScript {
       this.recordSourceMappingStart(name);
 
       if (!name.isMissing()) {
-        var pullSymbol = this.semanticInfoChain.getSymbolForAST(name, this.document.fileName);
+        var pullSymbol = this.getSymbolForAST(name);
         if (pullSymbol === null) {
           this.writeToOutput(name.text());
         } else if (isNotMemberAccess) {
@@ -1228,7 +1235,7 @@ module TypeScript {
     }
 
     public emitClass(classDecl: ClassDeclaration) {
-      var pullDecl = this.semanticInfoChain.getDeclForAST(classDecl, this.document.fileName);
+      var pullDecl = this.getDeclForAST(classDecl);
 
       var svClassNode = this.thisClassNode;
       var svBaseName = this.thisBaseName;

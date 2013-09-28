@@ -107,8 +107,13 @@ module M {
       var x = index;
       var y: { foo: new(a: number, b: number) => I } = null;
       var z: { 'foo bar': number } = null, w = { 'foo bar': 0 }; // Google Closure Compiler's type parser cannot quote names
+      var functionExpression1 = function foo() { return foo; };
+      var functionExpression2 = { foo: function bar() { return bar; } };
       return '';
     }
+
+    var functionExpression1 = function foo() { return foo; };
+    var functionExpression2 = { foo: function bar() { return bar; } };
 
     function tryCatch1() {
       try {
