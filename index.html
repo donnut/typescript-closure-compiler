@@ -13,6 +13,9 @@ textarea {
 
 <h1>TypeScript Closure Compiler Demo</h1>
 
+<input type="checkbox" id="detectConstants"><label for="detectConstants"> Generate @const</label><br>
+<input type="checkbox" id="mangleNames"><label for="mangleNames"> Mangle internal names</label><br>
+
 <h2>Input</h2>
 <textarea id="input" rows="20" cols="120" autofocus>
 class Greeter {
@@ -46,7 +49,7 @@ var useAsync = window.URL && window.Worker && window.Blob;
 var timeout = 0;
 
 if (useAsync) {
-  var source = compileTypeScript + ' onmessage = function(e) { postMessage(compileTypeScript(e.data)); };';
+  var source = compileTypeScript + 'onmessage = function(e) { postMessage(compileTypeScript(e.data)); };';
   var worker = new Worker(URL.createObjectURL(new Blob([source], { type: 'text/javascript' })));
   worker.onmessage = function(e) { process(e.data); };
 }
@@ -62,11 +65,16 @@ function process(data) {
 }
 
 function compile() {
+  var options = {
+    mangleNames: mangleNames.checked,
+    detectConstants: detectConstants.checked,
+    source: input.value
+  };
   if (useAsync) {
     output.value = 'Compiling...';
-    worker.postMessage(input.value);
+    worker.postMessage(options);
   } else {
-    process(compileTypeScript(input.value));
+    process(compileTypeScript(options));
   }
 }
 
@@ -75,7 +83,7 @@ function compileSoon() {
   timeout = setTimeout(compile, 500);
 }
 
-input.oninput = compileSoon;
+input.oninput = detectConstants.onchange = mangleNames.onchange = compileSoon;
 compile();
 
 </script>
