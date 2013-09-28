@@ -100,7 +100,7 @@ var f$mangled = function (index$mangled) {
   /** @type {?{ a$mangled: number }} */ var k$mangled = { a$mangled: 0 };
   /** @type {Object.<number, string>} */ var l$mangled = { 0: 'a' };
   /** @type {Object.<string, number>} */ var m$mangled = { a$mangled: 0 };
-  /** @type {?{ 'a': number }} */ var n$mangled = { 'a': 0 };
+  /** @type {?} */ var n$mangled = { 'a': 0 };
   return '';
 };
 

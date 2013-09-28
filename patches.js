@@ -34,7 +34,7 @@ TypeScript.ForInStatement.prototype.emitWorker = function(emitter) {
 
 TypeScript.TypeScriptCompiler.prototype.emitAll = function(emitAll) {
   return function(ioHost, ioMapper) {
-    TypeScript.Emitter.detectConstants(this, ioHost);
+    TypeScript.Emitter.preprocessCompilerInput(this, ioHost);
     return emitAll.call(this, ioHost, ioMapper);
   };
 }(TypeScript.TypeScriptCompiler.prototype.emitAll);

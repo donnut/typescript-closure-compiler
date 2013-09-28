@@ -1757,7 +1757,7 @@ module TypeScript {
         if (type.getMembers().length === 0) {
           return '?Object'; // Object types are nullable in TypeScript
         }
-        if (type.getMembers().some(member => /[^A-Za-z0-9_$]/.test(member.name))) {
+        if (type.getMembers().some(member => /[^A-Za-z0-9_$]/.test(member.getDisplayName()))) {
           return '?'; // Google Closure Compiler's type parser cannot quote names
         }
         return '?{ ' + // Object types are nullable in TypeScript
@@ -1881,7 +1881,7 @@ module TypeScript {
       else this.emitJSDocComment(Emitter.joinJSDocComments(user, jsDoc));
     }
 
-    public static detectConstants(compiler: TypeScriptCompiler, ioHost: EmitterIOHost) {
+    private static detectConstants(compiler: TypeScriptCompiler, ioHost: EmitterIOHost) {
       if (!Emitter.DETECT_CONSTANTS) return;
 
       var potentialConstants: PullSymbol[] = [];
@@ -1954,6 +1954,10 @@ module TypeScript {
       });
 
       Emitter.detectedConstants = potentialConstants.filter(symbol => impossibleConstants.indexOf(symbol) === -1);
+    }
+
+    public static preprocessCompilerInput(compiler: TypeScriptCompiler, ioHost: EmitterIOHost) {
+      Emitter.detectConstants(compiler, ioHost);
     }
 
     // This will be set by tscc, which checks command line flags
