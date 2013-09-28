@@ -296,7 +296,7 @@ M.MM.I.prototype.c = function (a) {
  */
 M.MM.f = function (index) {
   /** @type {number} */ var x = index;
-  /** @type {?{ foo: ?function(new:I, number, number) }} */ var y = null;
+  /** @type {?{ foo: ?function(new:M.MM.I, number, number) }} */ var y = null;
   /** @type {?} */ var z = null;
   /** @type {?} */ var w = { 'foo bar': 0 };
   /** @type {?function(): ?} */ var functionExpression1 = function foo() {
@@ -338,26 +338,27 @@ M.MM.tryCatch2 = function () {
   }
 };
 
+
 /**
- * @typedef {Object.<string, A>}
+ * @typedef {Object.<string, M.MM.A>}
  */
 M.MM.IndexFoo;
 
 
 /**
- * @typedef {(Object.<string, A>|Object.<number, B>)}
+ * @typedef {(Object.<string, M.MM.A>|Object.<number, M.MM.B>)}
  */
 M.MM.IndexFoo2;
 
 
 /**
- * @typedef {?function(string): A}
+ * @typedef {?function(string): M.MM.A}
  */
 M.MM.CallFoo;
 
 
 /**
- * @typedef {(?function(string): A|?function(number): B)}
+ * @typedef {(?function(string): M.MM.A|?function(number): M.MM.B)}
  */
 M.MM.CallFoo2;
 

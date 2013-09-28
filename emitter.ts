@@ -1627,12 +1627,13 @@ module TypeScript {
 
       // Simple types
       if (type.isNamedTypeSymbol() && ignoreName === IgnoreName.NO) {
-        if (type.name === 'any') return '?';
-        if (type.name === 'void') return 'undefined';
-        if (type.name === 'Boolean') return '?boolean'; // Use "Boolean" for a nullable boolean
-        if (type.name === 'Number') return '?number'; // Use "Number" for a nullable number
-        if (type.name === 'String') return '?string'; // Use "String" for a nullable string
-        return type.name;
+        var name: string = Emitter.getFullSymbolName(type);
+        if (name === 'any') return '?';
+        if (name === 'void') return 'undefined';
+        if (name === 'Boolean') return '?boolean'; // Use "Boolean" for a nullable boolean
+        if (name === 'Number') return '?number'; // Use "Number" for a nullable number
+        if (name === 'String') return '?string'; // Use "String" for a nullable string
+        return name;
       }
 
       // Function types
