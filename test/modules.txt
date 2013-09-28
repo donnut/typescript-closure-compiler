@@ -1,0 +1,16 @@
+var M = {};
+/** @type {number} */ M.foo;
+
+
+var MM = {};
+/** @type {number} */ MM.foo;
+
+
+M.MM = {};
+/** @type {number} */ M.MM.foo;
+
+
+
+/** @type {number} */ M.MM.bar;
+
+

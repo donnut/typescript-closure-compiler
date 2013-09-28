@@ -154,6 +154,7 @@ module TypeScript {
     public sourceMapper: SourceMapper = null;
     public captureThisStmtString = "var _this = this;";
     private resolvingContext = new TypeScript.PullTypeResolutionContext();
+    private emittedModuleNames: string[] = [];
 
     public document: Document = null;
     private copyrightElement: AST = null;
@@ -741,9 +742,17 @@ module TypeScript {
 
       // Module
       else {
-        this.emitJSDocComment(Emitter.getUserComments(moduleDecl));
-        this.emitFullSymbolVariableStatement(this.getSymbolForAST(moduleDecl));
-        this.writeLineToOutput(' = {};');
+        var symbol: PullSymbol = this.getSymbolForAST(moduleDecl);
+        var name: string = Emitter.getFullSymbolName(symbol);
+
+        // Only initialize a module once
+        if (this.emittedModuleNames.indexOf(name) < 0) {
+          this.emitJSDocComment(Emitter.getUserComments(moduleDecl));
+          this.emitFullSymbolVariableStatement(symbol);
+          this.writeLineToOutput(' = {};');
+          this.emittedModuleNames.push(name);
+        }
+
         if (!isWholeFile) this.recordSourceMappingNameStart(this.moduleName);
         this.emitModuleElements(moduleDecl.members);
         if (!isWholeFile) this.recordSourceMappingNameEnd();
@@ -1688,15 +1697,16 @@ module TypeScript {
         return 'Object.<' + Emitter.formatJSDocType(signature.parameters[0].type) + ', ' + Emitter.formatJSDocType(signature.returnType) + '>';
       }
 
-      // Object literals and interfaces
+      // Object types and interfaces
       if (type.kind & TypeScript.PullElementKind.ObjectType || type.kind & TypeScript.PullElementKind.Interface) {
         if (type.getMembers().length === 0) {
-          return '{}';
+          return '?{}'; // Object types are nullable in TypeScript
         }
         if (type.getMembers().some(member => /[^A-Za-z0-9_$]/.test(member.name))) {
           return '?'; // Google Closure Compiler's type parser cannot quote names
         }
-        return '{ ' + type.getMembers().map(member => member.name + ': ' + Emitter.formatJSDocType(member.type)).join(', ') + ' }';
+        return '?{ ' + // Object types are nullable in TypeScript
+          type.getMembers().map(member => member.name + ': ' + Emitter.formatJSDocType(member.type)).join(', ') + ' }';
       }
 
       // Arrays
@@ -1800,6 +1810,7 @@ module TypeScript {
       this.writeToOutput('/** ' + jsDoc.join(' ') + ' */ ');
     }
 
+    // This will be set by tscc, which checks command line flags
     public static DEFINES: string[] = [];
   }
 }
