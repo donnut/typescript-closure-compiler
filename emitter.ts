@@ -1303,6 +1303,7 @@ module TypeScript {
 
       if (hasBaseClass) {
         this.writeLineToOutput("");
+        this.writeLineToOutput("");
         this.emitIndent();
         this.writeToOutput("__extends(" + Emitter.getFullSymbolName(this.getSymbolForAST(classDecl)) + ", " + this.thisBaseName + ");");
       }

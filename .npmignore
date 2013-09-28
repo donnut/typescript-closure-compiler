@@ -1,4 +1,5 @@
 .DS_Store
+/index.html
 /emitter.ts
 /.gitmodules
 /node_modules/
