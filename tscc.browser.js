@@ -54926,6 +54926,12 @@ var TypeScript;
         IgnoreName[IgnoreName["YES"] = 1] = "YES";
     })(IgnoreName || (IgnoreName = {}));
 
+    var ShouldMangle;
+    (function (ShouldMangle) {
+        ShouldMangle[ShouldMangle["NO"] = 0] = "NO";
+        ShouldMangle[ShouldMangle["YES"] = 1] = "YES";
+    })(ShouldMangle || (ShouldMangle = {}));
+
     (function (EmitContainer) {
         EmitContainer[EmitContainer["Prog"] = 0] = "Prog";
         EmitContainer[EmitContainer["Module"] = 1] = "Module";
@@ -56509,12 +56515,11 @@ else if (name.indexOf('.') < 0)
         };
 
         Emitter.mangleNameText = function (text) {
-            // return '$' + text;
-            return text;
+            return Emitter.MANGLE_NAMES ? text + '$mangled' : text;
         };
 
         Emitter.mangleVarArgSymbolName = function (symbol) {
-            return symbol.getDisplayName() + '$splat';
+            return symbol.getDisplayName() + '$rest';
         };
 
         Emitter.mangleSymbolName = function (symbol) {
@@ -56524,18 +56529,27 @@ else if (name.indexOf('.') < 0)
                 return name;
 
             // Ignore symbols not in the user's code
-            var rootPath = TypeScript.getPathToDecl(symbol.getDeclarations()[0])[0].name;
+            var path = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
+            if (path.length === 0)
+                return name;
+            var rootPath = path[0].name;
             if (!/\.ts$/.test(rootPath) || /\.d\.ts$/.test(rootPath))
                 return name;
+
+            for (var i = 0; i < path.length; i++) {
+                if (TypeScript.hasFlag(path[i].flags, TypeScript.DeclFlags.Ambient))
+                    return name;
+            }
 
             return Emitter.mangleNameText(name);
         };
 
-        Emitter.getFullSymbolName = function (symbol) {
+        Emitter.getFullSymbolName = function (symbol, shouldMangle) {
+            if (typeof shouldMangle === "undefined") { shouldMangle = ShouldMangle.YES; }
             var path = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
 
             if (symbol.kind & TypeScript.PullElementKind.Property && !(path[path.length - 1].flags & TypeScript.PullElementFlags.Static)) {
-                return Emitter.mangleSymbolName(symbol);
+                return shouldMangle === ShouldMangle.YES ? Emitter.mangleSymbolName(symbol) : symbol.name;
             }
 
             for (var i = path.length - 1; i > 0; i--) {
@@ -56547,12 +56561,17 @@ else if (name.indexOf('.') < 0)
             }
 
             return path.slice(i).map(function (pullDecl) {
-                return Emitter.mangleSymbolName(pullDecl.getSymbol());
+                var symbol = pullDecl.getSymbol();
+                return shouldMangle === ShouldMangle.YES ? Emitter.mangleSymbolName(symbol) : symbol.name;
             }).join('.');
         };
 
         Emitter.formatJSDocUnionType = function (parts) {
             return parts.length === 1 ? parts[0] : '(' + parts.join('|') + ')';
+        };
+
+        Emitter.formatJSDocArgumentType = function (arg) {
+            return arg.isVarArg ? '...[' + Emitter.stripOffArrayType(Emitter.formatJSDocType(arg.type)) + ']' : Emitter.formatJSDocType(arg.type);
         };
 
         Emitter.formatJSDocType = function (type, ignoreName) {
@@ -56579,7 +56598,7 @@ else if (name.indexOf('.') < 0)
             if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.Interface | TypeScript.PullElementKind.FunctionType) && type.getCallSignatures().length > 0) {
                 return Emitter.formatJSDocUnionType(type.getCallSignatures().map(function (signature) {
                     return '?function(' + signature.parameters.map(function (arg) {
-                        return Emitter.formatJSDocType(arg.type);
+                        return Emitter.formatJSDocArgumentType(arg);
                     }).join(', ') + ')' + (signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ': ' + Emitter.formatJSDocType(signature.returnType) : '');
                 }));
             }
@@ -56587,7 +56606,7 @@ else if (name.indexOf('.') < 0)
             if (type.kind & TypeScript.PullElementKind.ConstructorType && type.getConstructSignatures().length > 0) {
                 return Emitter.formatJSDocUnionType(type.getConstructSignatures().map(function (signature) {
                     return '?function(' + (signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ['new:' + Emitter.formatJSDocType(signature.returnType)] : Emitter.EMPTY_STRING_LIST).concat(signature.parameters.map(function (arg) {
-                        return Emitter.formatJSDocType(arg.type);
+                        return Emitter.formatJSDocArgumentType(arg);
                     })).join(', ') + ')';
                 }));
             }
@@ -56639,13 +56658,15 @@ else if (name.indexOf('.') < 0)
             return ['@const {' + Emitter.formatJSDocType(type) + '}'];
         };
 
+        Emitter.stripOffArrayType = function (type) {
+            return type.replace(/^Array\.<(.*)>$/, '$1');
+        };
+
         Emitter.getJSDocForArguments = function (symbols) {
             return symbols.map(function (symbol) {
                 var type = Emitter.formatJSDocType(symbol.type);
-                if (symbol.isVarArg) {
-                    type = type.replace(/^Array\.<(.*)>$/, '...$1');
-                    return '@param {' + type + '} ' + Emitter.mangleVarArgSymbolName(symbol);
-                }
+                if (symbol.isVarArg)
+                    return '@param {...' + Emitter.stripOffArrayType(type) + '} ' + Emitter.mangleVarArgSymbolName(symbol);
                 if (symbol.isOptional)
                     type += '=';
                 return '@param {' + type + '} ' + Emitter.mangleSymbolName(symbol);
@@ -56694,7 +56715,7 @@ else if (name.indexOf('.') < 0)
 
         Emitter.prototype.getJSDocForVariableDeclaration = function (varDecl) {
             var symbol = this.getSymbolForAST(varDecl);
-            return Emitter.DEFINES.indexOf(Emitter.getFullSymbolName(symbol)) >= 0 ? ['@define {' + Emitter.formatJSDocType(symbol.type) + '}'] : Emitter.detectedConstants.indexOf(symbol) >= 0 ? Emitter.getJSDocForConst(symbol.type) : Emitter.getJSDocForType(symbol.type);
+            return Emitter.DEFINES.indexOf(Emitter.getFullSymbolName(symbol, ShouldMangle.NO)) >= 0 ? ['@define {' + Emitter.formatJSDocType(symbol.type) + '}'] : Emitter.detectedConstants.indexOf(symbol) >= 0 ? Emitter.getJSDocForConst(symbol.type) : Emitter.getJSDocForType(symbol.type);
         };
 
         Emitter.joinJSDocComments = function (first, second) {
@@ -56798,6 +56819,7 @@ else
         Emitter.EMPTY_STRING_LIST = [];
 
         Emitter.DEFINES = [];
+        Emitter.MANGLE_NAMES = false;
         Emitter.DETECT_CONSTANTS = false;
         Emitter.detectedConstants = [];
         return Emitter;
