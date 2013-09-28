@@ -77,4 +77,11 @@ function compile(source) {
   return { result: data, diagnostics: null };
 }
 
-console.log('function compileTypeScript(source) { ' + code + compile + ' return compile(source); }');
+console.log([
+  'function compileTypeScript(options) {',
+  code,
+  compile,
+  'TypeScript.Emitter.MANGLE_NAMES = options.mangleNames;',
+  'TypeScript.Emitter.DETECT_CONSTANTS = options.detectConstants;',
+  'return compile(options.source);',
+'}'].join('\n'));

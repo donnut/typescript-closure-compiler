@@ -1906,7 +1906,7 @@ module TypeScript {
             case TypeScript.NodeType.VariableDeclarator:
               var varDecl = <VariableDeclarator>path.ast();
               if (varDecl.init !== null) {
-                var symbol = compiler.semanticInfoChain.getSymbolForAST(varDecl, fileName);
+                var symbol = compiler.semanticInfoChain.getSymbolForAST(varDecl, fileName) || null;
                 if (symbol !== null && potentialConstants.indexOf(symbol) === -1 && (
                     symbol.type.isPrimitive() || symbol.type.getTypeName() === 'RegExp') && (
                     symbol.kind === TypeScript.PullElementKind.Variable ||
@@ -1934,7 +1934,7 @@ module TypeScript {
               switch (binaryExpr.operand1.nodeType()) {
                 case TypeScript.NodeType.Name:
                 case TypeScript.NodeType.MemberAccessExpression:
-                  var symbol = compiler.semanticInfoChain.getSymbolForAST(binaryExpr.operand1, fileName);
+                  var symbol = compiler.semanticInfoChain.getSymbolForAST(binaryExpr.operand1, fileName) || null;
                   if (symbol !== null && impossibleConstants.indexOf(symbol) === -1) {
                     impossibleConstants.push(symbol);
                   }
@@ -1951,7 +1951,7 @@ module TypeScript {
               switch (unaryExpr.operand.nodeType()) {
                 case TypeScript.NodeType.Name:
                 case TypeScript.NodeType.MemberAccessExpression:
-                  var symbol = compiler.semanticInfoChain.getSymbolForAST(unaryExpr.operand, fileName);
+                  var symbol = compiler.semanticInfoChain.getSymbolForAST(unaryExpr.operand, fileName) || null;
                   if (symbol !== null && impossibleConstants.indexOf(symbol) === -1) {
                     impossibleConstants.push(symbol);
                   }
@@ -2022,7 +2022,7 @@ module TypeScript {
             case TypeScript.NodeType.InterfaceDeclaration:
             case TypeScript.NodeType.ModuleDeclaration:
             case TypeScript.NodeType.VariableDeclarator:
-              var symbol = compiler.semanticInfoChain.getSymbolForAST(path.ast(), fileName);
+              var symbol = compiler.semanticInfoChain.getSymbolForAST(path.ast(), fileName) || null;
               if (symbol !== null) {
                 if (!Emitter.shouldMangleSymbol(symbol)) preventManglingOfSymbol(symbol);
                 else if (symbol.type !== null) preventManglingOfInheritedMembers(symbol.type);
