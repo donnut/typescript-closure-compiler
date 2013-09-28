@@ -56236,6 +56236,10 @@ else
                 }
             }
 
+            // Reset spacing
+            isFirstLine = true;
+            lastEmittedMember = null;
+
             for (var i = 0, n = classDecl.members.members.length; i < n; i++) {
                 var memberDecl = classDecl.members.members[i];
 
@@ -56599,6 +56603,10 @@ else if (name.indexOf('.') < 0)
             return ['@type {' + Emitter.formatJSDocType(type) + '}'];
         };
 
+        Emitter.getJSDocForConst = function (type) {
+            return ['@const {' + Emitter.formatJSDocType(type) + '}'];
+        };
+
         Emitter.getJSDocForArguments = function (symbols) {
             return symbols.map(function (symbol) {
                 var type = Emitter.formatJSDocType(symbol.type);
@@ -56650,7 +56658,7 @@ else if (name.indexOf('.') < 0)
 
         Emitter.prototype.getJSDocForVariableDeclaration = function (varDecl) {
             var symbol = this.getSymbolForAST(varDecl);
-            return Emitter.DEFINES.indexOf(Emitter.getFullSymbolName(symbol)) >= 0 ? ['@define {' + Emitter.formatJSDocType(symbol.type) + '}'] : Emitter.getJSDocForType(symbol.type);
+            return Emitter.DEFINES.indexOf(Emitter.getFullSymbolName(symbol)) >= 0 ? ['@define {' + Emitter.formatJSDocType(symbol.type) + '}'] : Emitter.detectedConstants.indexOf(symbol) >= 0 ? Emitter.getJSDocForConst(symbol.type) : Emitter.getJSDocForType(symbol.type);
         };
 
         Emitter.joinJSDocComments = function (first, second) {
@@ -56683,9 +56691,79 @@ else if (name.indexOf('.') < 0)
 else
                 this.emitJSDocComment(Emitter.joinJSDocComments(user, jsDoc));
         };
+
+        Emitter.detectConstants = function (compiler, ioHost) {
+            if (!Emitter.DETECT_CONSTANTS)
+                return;
+
+            var potentialConstants = [];
+            var impossibleConstants = [];
+
+            compiler.fileNameToDocument.getAllKeys().forEach(function (fileName) {
+                TypeScript.walkAST(compiler.getDocument(fileName).script, function (path, walker) {
+                    switch (path.nodeType()) {
+                        case TypeScript.NodeType.VariableDeclarator:
+                            var varDecl = path.ast();
+                            if (varDecl.init !== null) {
+                                var symbol = compiler.semanticInfoChain.getSymbolForAST(path.ast(), fileName);
+                                if (symbol !== null && potentialConstants.indexOf(symbol) === -1 && (symbol.type.isPrimitive() || symbol.type.getTypeName() === 'RegExp') && (symbol.kind === TypeScript.PullElementKind.Variable || symbol.kind === TypeScript.PullElementKind.Property && varDecl.isStatic())) {
+                                    potentialConstants.push(symbol);
+                                }
+                            }
+                            break;
+
+                        case TypeScript.NodeType.AssignmentExpression:
+                        case TypeScript.NodeType.AddAssignmentExpression:
+                        case TypeScript.NodeType.SubtractAssignmentExpression:
+                        case TypeScript.NodeType.MultiplyAssignmentExpression:
+                        case TypeScript.NodeType.DivideAssignmentExpression:
+                        case TypeScript.NodeType.ModuloAssignmentExpression:
+                        case TypeScript.NodeType.AndAssignmentExpression:
+                        case TypeScript.NodeType.ExclusiveOrAssignmentExpression:
+                        case TypeScript.NodeType.OrAssignmentExpression:
+                        case TypeScript.NodeType.LeftShiftAssignmentExpression:
+                        case TypeScript.NodeType.SignedRightShiftAssignmentExpression:
+                        case TypeScript.NodeType.UnsignedRightShiftAssignmentExpression:
+                            var binaryExpr = path.ast();
+                            switch (binaryExpr.operand1.nodeType()) {
+                                case TypeScript.NodeType.Name:
+                                case TypeScript.NodeType.MemberAccessExpression:
+                                    var symbol = compiler.semanticInfoChain.getSymbolForAST(binaryExpr.operand1, fileName);
+                                    if (symbol !== null && impossibleConstants.indexOf(symbol) === -1) {
+                                        impossibleConstants.push(symbol);
+                                    }
+                                    break;
+                            }
+                            break;
+
+                        case TypeScript.NodeType.PreIncrementExpression:
+                        case TypeScript.NodeType.PreDecrementExpression:
+                        case TypeScript.NodeType.PostIncrementExpression:
+                        case TypeScript.NodeType.PostDecrementExpression:
+                            var unaryExpr = path.ast();
+                            switch (unaryExpr.operand.nodeType()) {
+                                case TypeScript.NodeType.Name:
+                                case TypeScript.NodeType.MemberAccessExpression:
+                                    var symbol = compiler.semanticInfoChain.getSymbolForAST(unaryExpr.operand, fileName);
+                                    if (symbol !== null && impossibleConstants.indexOf(symbol) === -1) {
+                                        impossibleConstants.push(symbol);
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                });
+            });
+
+            Emitter.detectedConstants = potentialConstants.filter(function (symbol) {
+                return impossibleConstants.indexOf(symbol) === -1;
+            });
+        };
         Emitter.EMPTY_STRING_LIST = [];
 
         Emitter.DEFINES = [];
+        Emitter.DETECT_CONSTANTS = false;
+        Emitter.detectedConstants = [];
         return Emitter;
     })();
     TypeScript.Emitter = Emitter;
@@ -56719,6 +56797,13 @@ TypeScript.ForStatement.prototype.emitWorker = function(emitter) {
 TypeScript.ForInStatement.prototype.emitWorker = function(emitter) {
   emitter.emitForInStatement(this);
 };
+
+TypeScript.TypeScriptCompiler.prototype.emitAll = function(emitAll) {
+  return function(ioHost, ioMapper) {
+    TypeScript.Emitter.detectConstants(this, ioHost);
+    return emitAll.call(this, ioHost, ioMapper);
+  };
+}(TypeScript.TypeScriptCompiler.prototype.emitAll);
 
 TypeScript.Indenter.indentStepString = '  ';
 TypeScript.Indenter.indentStep = 2;
