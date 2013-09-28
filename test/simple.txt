@@ -300,4 +300,28 @@ M.MM.f = function (index) {
   return '';
 };
 
+/**
+ * @typedef {Object.<string, A>}
+ */
+M.MM.IndexFoo;
+
+
+/**
+ * @typedef {(Object.<string, A>|Object.<number, B>)}
+ */
+M.MM.IndexFoo2;
+
+
+/**
+ * @typedef {?function(string): A}
+ */
+M.MM.CallFoo;
+
+
+/**
+ * @typedef {(?function(string): A|?function(number): B)}
+ */
+M.MM.CallFoo2;
+
+
 

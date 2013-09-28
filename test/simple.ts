@@ -109,5 +109,23 @@ module M {
       var z: { 'foo bar': number } = null, w = { 'foo bar': 0 }; // Google Closure Compiler's type parser cannot quote names
       return '';
     }
+
+    interface IndexFoo {
+      [name: string]: A;
+    }
+
+    interface IndexFoo2 {
+      [name: string]: A;
+      [name: number]: B;
+    }
+
+    interface CallFoo {
+      (name: string): A;
+    }
+
+    interface CallFoo2 {
+      (name: string): A;
+      (name: number): B;
+    }
   }
 }

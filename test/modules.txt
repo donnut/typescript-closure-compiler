@@ -1,5 +1,19 @@
 var M = {};
 /** @type {number} */ M.foo;
+/** @type {?{ baz: number }} */ M.bar = { baz: 1 };
+
+/**
+ * @constructor
+ * @struct
+ */
+M.Foo = function () {
+  /** @type {number} */ this.foo;
+};
+/**
+ * @type {number}
+ */
+M.Foo.bar;
+
 
 
 var MM = {};
@@ -12,5 +26,17 @@ M.MM = {};
 
 
 /** @type {number} */ M.MM.bar;
+
+
+
+var Empty = {};
+
+
+var NotEmpty = {};
+/**
+ * @interface
+ */
+NotEmpty.Foo = function () {
+};
 
 

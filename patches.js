@@ -1,3 +1,7 @@
+TypeScript.ModuleDeclaration.prototype.shouldEmit = function() {
+  return true;
+};
+
 TypeScript.InterfaceDeclaration.prototype.shouldEmit = function() {
   return true;
 };
@@ -9,9 +13,7 @@ TypeScript.InterfaceDeclaration.prototype.emit = function(emitter) {
 };
 
 TypeScript.UnaryExpression.prototype.emitWorker = function(emitWorker) {
-  return function(emitter) {
-    emitter.emitUnaryExpression(this, emitWorker);
-  };
+  return function(emitter) { emitter.emitUnaryExpression(this, emitWorker); };
 }(TypeScript.UnaryExpression.prototype.emitWorker);
 
 TypeScript.VariableStatement.prototype.emitWorker = function(emitter) {

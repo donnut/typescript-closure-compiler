@@ -86,3 +86,15 @@ IBar.prototype.bar = function (a, b) {
 var foo = function (a, b, foo, ifoo) {
   return false;
 };
+
+/**
+ * @typedef {Object.<string, ?>}
+ */
+var IndexFoo;
+
+
+/**
+ * @typedef {?function(string): ?}
+ */
+var CallFoo;
+

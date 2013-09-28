@@ -21,3 +21,11 @@ interface IBar<A, B extends IFoo<A, B>> extends IFoo<A, B> {
 function foo<A, B extends IFoo<A, B>>(a: A, b: B, foo: Foo<A, B>, ifoo: IFoo<A, B>): boolean {
   return false;
 }
+
+interface IndexFoo<T> {
+  [name: string]: T;
+}
+
+interface CallFoo<T> {
+  (name: string): T;
+}

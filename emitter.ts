@@ -16,6 +16,11 @@
 ///<reference path='typescript.ts' />
 
 module TypeScript {
+  enum IgnoreName {
+    NO,
+    YES,
+  }
+
   export enum EmitContainer {
     Prog,
     Module,
@@ -1611,8 +1616,17 @@ module TypeScript {
     }
 
     public emitInterfaceDeclaration(interfaceDecl: InterfaceDeclaration) {
+      // Special-case interface declarations with index signatures
+      var symbol: PullSymbol = this.getSymbolForAST(interfaceDecl);
+      if (symbol.type.getCallSignatures().length > 0 || symbol.type.getIndexSignatures().length > 0) {
+        this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(interfaceDecl), Emitter.getJSDocForTypedef(symbol.type)));
+        this.emitFullSymbolVariableStatement(symbol);
+        this.writeLineToOutput(';');
+        return;
+      }
+
       this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(interfaceDecl), this.getJSDocForInterfaceDeclaration(interfaceDecl)));
-      this.emitFullSymbolVariableStatement(this.getSymbolForAST(interfaceDecl));
+      this.emitFullSymbolVariableStatement(symbol);
       this.writeLineToOutput(' = function () {');
       this.emitIndent();
       this.writeLineToOutput('};');
@@ -1643,14 +1657,19 @@ module TypeScript {
     private static getFullSymbolName(symbol: PullSymbol): string {
       var path: PullDecl[] = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
 
+      // Never use the full parent path for object properties
+      if (symbol.kind & TypeScript.PullElementKind.Property && !(path[path.length - 1].flags & TypeScript.PullElementFlags.Static)) {
+        return symbol.name;
+      }
+
       // Count down to 1 because 0 is the file name
       for (var i = path.length - 1; i > 1; i--) {
-        var nextPullDecl: PullDecl = path[i - 1];
-        var symbol: PullSymbol = nextPullDecl.getSymbol();
+        var currentSymbol: PullSymbol = path[i].getSymbol();
+        var nextSymbol: PullSymbol = path[i - 1].getSymbol();
 
         // Stop before functions since symbols inside functions are
         // automatically available through regular lexical scoping
-        if (symbol !== null && symbol.kind & TypeScript.PullElementKind.SomeFunction) {
+        if (nextSymbol !== null && nextSymbol.kind & TypeScript.PullElementKind.SomeFunction) {
           break;
         }
       }
@@ -1658,7 +1677,11 @@ module TypeScript {
       return path.slice(i).map(pullDecl => pullDecl.name).join('.');
     }
 
-    private static formatJSDocType(type: PullTypeSymbol): string {
+    private static formatJSDocUnionType(parts: string[]): string {
+      return parts.length === 1 ? parts[0] : '(' + parts.join('|') + ')';
+    }
+
+    private static formatJSDocType(type: PullTypeSymbol, ignoreName: IgnoreName = IgnoreName.NO): string {
       // Google Closure Compiler's type system is not powerful enough to work
       // with type parameters, especially type parameters with constraints
       if (type.kind & TypeScript.PullElementKind.TypeParameter) {
@@ -1666,7 +1689,7 @@ module TypeScript {
       }
 
       // Simple types
-      if (type.isNamedTypeSymbol()) {
+      if (type.isNamedTypeSymbol() && ignoreName === IgnoreName.NO) {
         if (type.name === 'any') return '?';
         if (type.name === 'void') return 'undefined';
         if (type.name === 'Boolean') return '?boolean'; // Use "Boolean" for a nullable boolean
@@ -1676,29 +1699,28 @@ module TypeScript {
       }
 
       // Function types
-      if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.FunctionType) && type.getCallSignatures().length > 0) {
-        var signature: PullSignatureSymbol = type.getCallSignatures()[0];
-        return '?function(' + // TypeScript has nullable functions
+      if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.Interface | TypeScript.PullElementKind.FunctionType) &&
+          type.getCallSignatures().length > 0) {
+        return Emitter.formatJSDocUnionType(type.getCallSignatures().map(signature => '?function(' + // TypeScript has nullable functions
           signature.parameters.map(arg => Emitter.formatJSDocType(arg.type)).join(', ') + ')' + (
-          signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ': ' + Emitter.formatJSDocType(signature.returnType) : '');
+          signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ': ' + Emitter.formatJSDocType(signature.returnType) : '')));
       }
 
       // Constructor types
       if (type.kind & TypeScript.PullElementKind.ConstructorType && type.getConstructSignatures().length > 0) {
-        var signature: PullSignatureSymbol = type.getConstructSignatures()[0];
-        return '?function(' + // TypeScript has nullable functions
+        return Emitter.formatJSDocUnionType(type.getConstructSignatures().map(signature => '?function(' + // TypeScript has nullable functions
           (signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ['new:' + Emitter.formatJSDocType(signature.returnType)] :
-            Emitter.EMPTY_STRING_LIST).concat(signature.parameters.map(arg => Emitter.formatJSDocType(arg.type))).join(', ') + ')';
+            Emitter.EMPTY_STRING_LIST).concat(signature.parameters.map(arg => Emitter.formatJSDocType(arg.type))).join(', ') + ')'));
       }
 
       // Map types
-      if (type.kind & TypeScript.PullElementKind.ObjectType && type.getIndexSignatures().length > 0) {
-        var signature: PullSignatureSymbol = type.getIndexSignatures()[0];
-        return 'Object.<' + Emitter.formatJSDocType(signature.parameters[0].type) + ', ' + Emitter.formatJSDocType(signature.returnType) + '>';
+      if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.Interface) && type.getIndexSignatures().length > 0) {
+        return Emitter.formatJSDocUnionType(type.getIndexSignatures().map(signature => 'Object.<' +
+          Emitter.formatJSDocType(signature.parameters[0].type) + ', ' + Emitter.formatJSDocType(signature.returnType) + '>'));
       }
 
       // Object types and interfaces
-      if (type.kind & TypeScript.PullElementKind.ObjectType || type.kind & TypeScript.PullElementKind.Interface) {
+      if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.Interface)) {
         if (type.getMembers().length === 0) {
           return '?{}'; // Object types are nullable in TypeScript
         }
@@ -1765,6 +1787,10 @@ module TypeScript {
       return ['@enum {number}'];
     }
 
+    private static getJSDocForTypedef(type: PullTypeSymbol): string[] {
+      return ['@typedef {' + Emitter.formatJSDocType(type, IgnoreName.YES) + '}'];
+    }
+
     private getJSDocForFunctionDeclaration(funcDecl: FunctionDeclaration): string[] {
       var type: PullTypeSymbol = this.getSymbolForAST(funcDecl).type;
       var signature: PullSignatureSymbol = type.getCallSignatures().concat(type.getConstructSignatures())[0];
@@ -1776,7 +1802,7 @@ module TypeScript {
             : Emitter.EMPTY_STRING_LIST);
     }
 
-    private getJSDocForInterfaceDeclaration(interfaceDecl: InterfaceDeclaration) {
+    private getJSDocForInterfaceDeclaration(interfaceDecl: InterfaceDeclaration): string[] {
       return ['@interface'].concat(this.getJSDocForExtends(interfaceDecl.extendsList));
     }
 
