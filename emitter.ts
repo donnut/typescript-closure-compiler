@@ -143,7 +143,6 @@ module TypeScript {
   }
 
   export class Emitter {
-    public globalThisCapturePrologueEmitted = false;
     public extendsPrologueEmitted = false;
     public thisBaseName: string = null;
     public thisClassNode: ClassDeclaration = null;
@@ -151,15 +150,10 @@ module TypeScript {
     public moduleName = "";
     public emitState = new EmitState();
     public indenter = new Indenter();
-    public modAliasId: string = null;
-    public firstModAlias: string = null;
     public allSourceMappers: SourceMapper[] = [];
     public sourceMapper: SourceMapper = null;
     public captureThisStmtString = "var _this = this;";
-    public varListCountStack: number[] = [0];
-    private declStack: PullDecl[] = [];
     private resolvingContext = new TypeScript.PullTypeResolutionContext();
-    private exportAssignmentIdentifier: string = null;
 
     public document: Document = null;
     private copyrightElement: AST = null;
@@ -172,30 +166,8 @@ module TypeScript {
         TypeScript.globalBinder.semanticInfoChain = semanticInfoChain;
     }
 
-    private pushDecl(decl: PullDecl) {
-      if (decl) {
-        this.declStack[this.declStack.length] = decl;
-      }
-    }
-
-    private popDecl(decl: PullDecl) {
-      if (decl) {
-        this.declStack.length--;
-      }
-    }
-
-    private getEnclosingDecl() {
-      var declStackLen = this.declStack.length;
-      var enclosingDecl = declStackLen > 0 ? this.declStack[declStackLen - 1] : null;
-      return enclosingDecl;
-    }
-
     public setExportAssignmentIdentifier(id: string) {
-      this.exportAssignmentIdentifier = id;
-    }
-
-    public getExportAssignmentIdentifier() {
-      return this.exportAssignmentIdentifier;
+      // Export assignments are ignored
     }
 
     public setDocument(document: Document) {
@@ -248,7 +220,7 @@ module TypeScript {
     }
 
     public setInVarBlock(count: number) {
-      this.varListCountStack[this.varListCountStack.length - 1] = count;
+      // Not used by the modified emitter code
     }
 
     public setContainer(c: number): number {
@@ -474,7 +446,6 @@ module TypeScript {
       //}
 
       var pullDecl = this.semanticInfoChain.getDeclForAST(funcDecl, this.document.fileName);
-      this.pushDecl(pullDecl);
 
       // We have no way of knowing if the current function is used as an expression or a statement, so as to enusre that the emitted
       // JavaScript is always valid, add an extra parentheses for unparenthesized function expressions
@@ -593,8 +564,6 @@ module TypeScript {
       this.recordSourceMappingEnd(funcDecl);
 
       this.emitComments(funcDecl, false);
-
-      this.popDecl(pullDecl);
     }
 
     private emitDefaultValueAssignments(funcDecl: FunctionDeclaration): void {
@@ -727,11 +696,6 @@ module TypeScript {
     }
 
     public shouldCaptureThis(ast: AST) {
-      if (ast.nodeType() === TypeScript.NodeType.Script) {
-        var scriptDecl = this.semanticInfoChain.getUnit(this.document.fileName).getTopLevelDecls()[0];
-        return (scriptDecl.flags & TypeScript.PullElementFlags.MustCaptureThis) === TypeScript.PullElementFlags.MustCaptureThis;
-      }
-
       var decl = this.semanticInfoChain.getDeclForAST(ast, this.document.fileName);
       if (decl) {
         return (decl.flags & TypeScript.PullElementFlags.MustCaptureThis) === TypeScript.PullElementFlags.MustCaptureThis;
@@ -742,7 +706,6 @@ module TypeScript {
 
     public emitModule(moduleDecl: ModuleDeclaration) {
       var pullDecl = this.semanticInfoChain.getDeclForAST(moduleDecl, this.document.fileName);
-      this.pushDecl(pullDecl);
 
       var svModuleName = this.moduleName;
       this.moduleName = moduleDecl.name.actualText;
@@ -789,8 +752,6 @@ module TypeScript {
       this.recordSourceMappingEnd(moduleDecl);
       this.setContainer(temp);
       this.moduleName = svModuleName;
-
-      this.popDecl(pullDecl);
     }
 
     public emitEnumElement(varDecl: VariableDeclarator): void {
@@ -895,66 +856,12 @@ module TypeScript {
       var hasInitializer = (varDecl.init !== null);
       if (hasInitializer) {
         this.writeToOutputTrimmable(" = ");
-
-        // Ensure we have a fresh var list count when recursing into the variable
-        // initializer.  We don't want our current list of variables to affect how we
-        // emit nested variable lists.
-        this.varListCountStack.push(0);
         varDecl.init.emit(this);
-        this.varListCountStack.pop();
       }
 
       this.recordSourceMappingEnd(varDecl);
       this.writeToOutput(';');
       this.emitComments(varDecl, false);
-    }
-
-    private symbolIsUsedInItsEnclosingContainer(symbol: PullSymbol, dynamic = false) {
-      var symDecls = symbol.getDeclarations();
-
-      if (symDecls.length) {
-        var enclosingDecl = this.getEnclosingDecl();
-        if (enclosingDecl) {
-          var parentDecl = symDecls[0].getParentDecl();
-          if (parentDecl) {
-            var symbolDeclarationEnclosingContainer = parentDecl;
-            var enclosingContainer = enclosingDecl;
-
-            // compute the closing container of the symbol's declaration
-            while (symbolDeclarationEnclosingContainer) {
-              if (symbolDeclarationEnclosingContainer.kind === (dynamic ? TypeScript.PullElementKind.DynamicModule : TypeScript.PullElementKind.Container)) {
-                break;
-              }
-              symbolDeclarationEnclosingContainer = symbolDeclarationEnclosingContainer.getParentDecl();
-            }
-
-            // if the symbol in question is not a global, compute the nearest
-            // enclosing declaration from the point of usage
-            if (symbolDeclarationEnclosingContainer) {
-              while (enclosingContainer) {
-                if (enclosingContainer.kind === (dynamic ? TypeScript.PullElementKind.DynamicModule : TypeScript.PullElementKind.Container)) {
-                  break;
-                }
-
-                enclosingContainer = enclosingContainer.getParentDecl();
-              }
-            }
-
-            if (symbolDeclarationEnclosingContainer && enclosingContainer) {
-              var same = symbolDeclarationEnclosingContainer === enclosingContainer;
-
-              // initialized module object variables are bound to their parent's decls
-              if (!same && symbol.hasFlag(TypeScript.PullElementFlags.InitializedModule)) {
-                same = symbolDeclarationEnclosingContainer === enclosingContainer.getParentDecl();
-              }
-
-              return same;
-            }
-          }
-        }
-      }
-
-      return false;
     }
 
     public emitName(name: Identifier, isNotMemberAccess: boolean) {
@@ -1374,7 +1281,6 @@ module TypeScript {
 
     public emitClass(classDecl: ClassDeclaration) {
       var pullDecl = this.semanticInfoChain.getDeclForAST(classDecl, this.document.fileName);
-      this.pushDecl(pullDecl);
 
       var svClassNode = this.thisClassNode;
       var svBaseName = this.thisBaseName;
@@ -1444,8 +1350,6 @@ module TypeScript {
       this.setContainer(temp);
       this.thisClassNode = svClassNode;
       this.thisBaseName = svBaseName;
-
-      this.popDecl(pullDecl);
     }
 
     private emitClassMembers(classDecl: ClassDeclaration): void {
@@ -1553,13 +1457,6 @@ module TypeScript {
           this.writeLineToOutput("  __.prototype = b.prototype;");
           this.writeLineToOutput("  d.prototype = new __();");
           this.writeLineToOutput("};");
-        }
-      }
-
-      if (!this.globalThisCapturePrologueEmitted) {
-        if (this.shouldCaptureThis(script)) {
-          this.globalThisCapturePrologueEmitted = true;
-          this.writeLineToOutput(this.captureThisStmtString);
         }
       }
     }
