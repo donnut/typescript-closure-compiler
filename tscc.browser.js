@@ -55057,6 +55057,7 @@ var TypeScript;
             this.sourceMapper = null;
             this.captureThisStmtString = "var _this = this;";
             this.resolvingContext = new TypeScript.PullTypeResolutionContext();
+            this.emittedModuleNames = [];
             this.document = null;
             this.copyrightElement = null;
             TypeScript.globalSemanticInfoChain = semanticInfoChain;
@@ -55618,9 +55619,16 @@ var TypeScript;
                 this.emitIndent();
                 this.writeLineToOutput('};');
             } else {
-                this.emitJSDocComment(Emitter.getUserComments(moduleDecl));
-                this.emitFullSymbolVariableStatement(this.getSymbolForAST(moduleDecl));
-                this.writeLineToOutput(' = {};');
+                var symbol = this.getSymbolForAST(moduleDecl);
+                var name = Emitter.getFullSymbolName(symbol);
+
+                if (this.emittedModuleNames.indexOf(name) < 0) {
+                    this.emitJSDocComment(Emitter.getUserComments(moduleDecl));
+                    this.emitFullSymbolVariableStatement(symbol);
+                    this.writeLineToOutput(' = {};');
+                    this.emittedModuleNames.push(name);
+                }
+
                 if (!isWholeFile)
                     this.recordSourceMappingNameStart(this.moduleName);
                 this.emitModuleElements(moduleDecl.members);
@@ -56540,14 +56548,14 @@ var TypeScript;
 
             if (type.kind & TypeScript.PullElementKind.ObjectType || type.kind & TypeScript.PullElementKind.Interface) {
                 if (type.getMembers().length === 0) {
-                    return '{}';
+                    return '?{}';
                 }
                 if (type.getMembers().some(function (member) {
                     return /[^A-Za-z0-9_$]/.test(member.name);
                 })) {
                     return '?';
                 }
-                return '{ ' + type.getMembers().map(function (member) {
+                return '?{ ' + type.getMembers().map(function (member) {
                     return member.name + ': ' + Emitter.formatJSDocType(member.type);
                 }).join(', ') + ' }';
             }
