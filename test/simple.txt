@@ -295,6 +295,7 @@ M.MM.tryCatch1 = function () {
 M.MM.tryCatch2 = function () {
   try  {
     try  {
+      throw null;
     } catch (e) {
     }
     /** @type {?} */ var foo;
@@ -324,3 +325,74 @@ M.MM.CallFoo;
  * @typedef {(?function(string): M.MM.A|?function(number): M.MM.B)}
  */
 M.MM.CallFoo2;
+
+/**
+ * @param {...number} foo$splat
+ * @returns {number}
+ */
+M.MM.test1 = function (foo$splat) {
+  /** @type {Array.<number>} */ var foo = [];
+  for (var _i = 0; _i < arguments.length; _i++) {
+    foo[_i] = arguments[_i];
+  }
+  return foo.length;
+};
+
+/**
+ * @param {string} a
+ * @param {string} b
+ * @param {...number} foo$splat
+ * @returns {number}
+ */
+M.MM.test2 = function (a, b, foo$splat) {
+  /** @type {Array.<number>} */ var foo = [];
+  for (var _i = 0; _i < arguments.length - 2; _i++) {
+    foo[_i] = arguments[_i + 2];
+  }
+  return foo.length;
+};
+
+/**
+ * @param {boolean} a
+ * @param {string=} b
+ * @param {number=} c
+ */
+M.MM.test3 = function (a, b, c) {
+  if (typeof b === "undefined") b = '';
+  if (typeof c === "undefined") c = 0;
+};
+
+/**
+ * @param {number=} baz
+ * @constructor
+ * @struct
+ */
+M.MM.Test1 = function (baz) {
+  if (typeof baz === "undefined") baz = 3;
+  /** @type {number} */ this.baz = baz;
+  /** @type {number} */ this.foo = 1;
+};
+
+M.MM.Test1.prototype.f = function () {
+  var _this = this;
+  /** @type {?function(): number} */ var foo = function () {
+    return _this.foo;
+  };
+};
+
+/** @type {number} */ M.MM.Test1.bar = 2;
+
+/**
+ * @constructor
+ * @struct
+ * @extends {M.MM.Test1}
+ */
+M.MM.Test2 = function () {
+  M.MM.Test1.call(this);
+};
+
+__extends(M.MM.Test2, M.MM.Test1);
+
+M.MM.Test2.prototype.f = function () {
+  M.MM.Test1.prototype.f.call(this);
+};

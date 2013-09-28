@@ -129,7 +129,7 @@ module M {
 
     function tryCatch2() {
       try {
-        try {} catch (e) {}
+        try { throw null; } catch (e) {}
         var foo: any;
         foo = 100;
         foo = '';
@@ -154,6 +154,31 @@ module M {
     interface CallFoo2 {
       (name: string): A;
       (name: number): B;
+    }
+
+    function test1(...foo: number[]): number {
+      return foo.length;
+    }
+
+    function test2(a: string, b: string, ...foo: number[]): number {
+      return foo.length;
+    }
+
+    function test3(a: boolean, b = '', c = 0) {
+    }
+
+    class Test1 {
+      foo = 1;
+      static bar = 2;
+      constructor(public baz = 3) {}
+      f() {
+        var foo = () => this.foo;
+      }
+    }
+
+    class Test2 extends Test1 {
+      constructor() { super(); }
+      f() { super.f(); }
     }
   }
 }

@@ -16,6 +16,10 @@ TypeScript.UnaryExpression.prototype.emitWorker = function(emitWorker) {
   return function(emitter) { emitter.emitUnaryExpression(this, emitWorker); };
 }(TypeScript.UnaryExpression.prototype.emitWorker);
 
+TypeScript.Parameter.prototype.emitWorker = function(emitter) {
+  emitter.emitParameter(this);
+};
+
 TypeScript.VariableStatement.prototype.emitWorker = function(emitter) {
   emitter.emitVariableStatement(this);
 };
