@@ -54915,6 +54915,8 @@ var TypeScript;
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+// Modified to emit Google Closure Compiler type annotations by Evan Wallace.
+//
 ///<reference path='typescript.ts' />
 var TypeScript;
 (function (TypeScript) {
