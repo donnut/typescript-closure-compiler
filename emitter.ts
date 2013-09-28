@@ -609,7 +609,7 @@ module TypeScript {
       if (funcDecl.variableArgList) {
         var n = funcDecl.arguments.members.length;
         var lastArg = <Parameter>funcDecl.arguments.members[n - 1];
-        var symbol: PullDecl = this.getSymbolForAST(lastArg);
+        var symbol: PullSymbol = this.getSymbolForAST(lastArg);
         this.emitIndent();
         this.recordSourceMappingStart(lastArg);
         this.emitInlineJSDocComment(Emitter.EMPTY_STRING_LIST, Emitter.getJSDocForType(symbol.type));
