@@ -55336,6 +55336,7 @@ var TypeScript;
         Emitter.prototype.emitInnerFunction = function (funcDecl, printName, includePreComments, isFunctionExpression) {
             if (typeof includePreComments === "undefined") { includePreComments = true; }
             if (typeof isFunctionExpression === "undefined") { isFunctionExpression = false; }
+            var _this = this;
             /// REVIEW: The code below causes functions to get pushed to a newline in cases where they shouldn't
             /// such as:
             ///   Foo.prototype.bar =
@@ -55389,27 +55390,18 @@ var TypeScript;
             if (printName && isFunctionExpression) {
                 var id = funcDecl.getNameText();
                 if (id && !funcDecl.isAccessor()) {
-                    this.writeToOutput(Emitter.mangleNameText(id));
+                    this.writeToOutput(id);
                 }
             }
 
             this.writeToOutput("(");
-            var argsLen = 0;
             if (funcDecl.arguments) {
                 this.emitComments(funcDecl.arguments, true);
-
-                var tempContainer = this.setContainer(EmitContainer.Args);
-                argsLen = funcDecl.arguments.members.length;
-                for (var i = 0; i < argsLen; i++) {
-                    var arg = funcDecl.arguments.members[i];
-                    arg.emit(this);
-
-                    if (i < argsLen - 1) {
-                        this.writeToOutput(", ");
-                    }
-                }
-                this.setContainer(tempContainer);
-
+                this.getFunctionDeclarationSignature(funcDecl).parameters.forEach(function (symbol, i) {
+                    if (i > 0)
+                        _this.writeToOutput(', ');
+                    _this.writeToOutput(symbol.isVarArg ? Emitter.mangleVarArgSymbolName(symbol) : Emitter.mangleSymbolName(symbol));
+                });
                 this.emitComments(funcDecl.arguments, false);
             }
             this.writeLineToOutput(") {");
@@ -55462,13 +55454,14 @@ var TypeScript;
                 this.writeToOutput(';');
             }
 
-            // The extra call is to make sure the caller's funcDecl end is recorded, since caller wont be able to record it
+            // The extra call is to make sure the caller's funcDecl end is recorded, since caller won't be able to record it
             this.recordSourceMappingEnd(funcDecl);
 
             this.emitComments(funcDecl, false);
         };
 
         Emitter.prototype.emitDefaultValueAssignments = function (funcDecl) {
+            var parameters = this.getFunctionDeclarationSignature(funcDecl).parameters;
             var n = funcDecl.arguments.members.length;
             if (funcDecl.variableArgList) {
                 n--;
@@ -55477,11 +55470,12 @@ var TypeScript;
             for (var i = 0; i < n; i++) {
                 var arg = funcDecl.arguments.members[i];
                 if (arg.init) {
+                    var mangled = Emitter.mangleSymbolName(parameters[i]);
                     this.emitIndent();
                     this.recordSourceMappingStart(arg);
-                    this.writeToOutput("if (typeof " + Emitter.mangleSymbolName(this.getSymbolForAST(arg)) + " === \"undefined\") ");
+                    this.writeToOutput("if (typeof " + mangled + " === \"undefined\") ");
                     this.recordSourceMappingStart(arg.id);
-                    this.writeToOutput(Emitter.mangleSymbolName(this.getSymbolForAST(arg)));
+                    this.writeToOutput(mangled);
                     this.recordSourceMappingEnd(arg.id);
                     this.writeToOutput(" = ");
                     this.emitJavascript(arg.init, false);
@@ -55709,7 +55703,7 @@ var TypeScript;
                     // This is caused by PullTypeResolver.resolveNameExpression avoiding
                     // names with the any type and happens when referencing the symbol
                     // for a try/catch statement among other things
-                    this.writeToOutput(Emitter.mangleNameText(name.text()));
+                    this.writeToOutput(name.text());
                 } else if (isNotMemberAccess) {
                     this.writeToOutput(Emitter.getFullSymbolName(pullSymbol));
                 } else {
@@ -55800,19 +55794,21 @@ var TypeScript;
             var constructorDecl = this.thisClassNode.constructorDecl;
 
             if (constructorDecl && constructorDecl.arguments) {
+                var parameters = this.getFunctionDeclarationSignature(constructorDecl).parameters;
                 for (var i = 0, n = constructorDecl.arguments.members.length; i < n; i++) {
                     var arg = constructorDecl.arguments.members[i];
                     if ((arg.getVarFlags() & TypeScript.VariableFlags.Property) !== TypeScript.VariableFlags.None) {
-                        var symbol = this.getSymbolForAST(arg);
+                        var memberSymbol = this.getSymbolForAST(arg);
+                        var argumentSymbol = parameters[i];
                         this.emitIndent();
                         this.recordSourceMappingStart(arg);
                         this.recordSourceMappingStart(arg.id);
-                        this.emitInlineJSDocComment(Emitter.getUserComments(arg), Emitter.getJSDocForType(symbol.type));
-                        this.writeToOutput("this." + Emitter.mangleSymbolName(symbol));
+                        this.emitInlineJSDocComment(Emitter.getUserComments(arg), Emitter.getJSDocForType(memberSymbol.type));
+                        this.writeToOutput("this." + Emitter.mangleSymbolName(memberSymbol));
                         this.recordSourceMappingEnd(arg.id);
                         this.writeToOutput(" = ");
                         this.recordSourceMappingStart(arg.id);
-                        this.writeToOutput(Emitter.mangleSymbolName(symbol));
+                        this.writeToOutput(Emitter.mangleSymbolName(argumentSymbol));
                         this.recordSourceMappingEnd(arg.id);
                         this.writeLineToOutput(";");
                         this.recordSourceMappingEnd(arg);
@@ -56397,11 +56393,6 @@ else
             }
         };
 
-        Emitter.prototype.emitParameter = function (ast) {
-            var symbol = this.getSymbolForAST(ast);
-            this.writeToOutput(symbol.isVarArg ? Emitter.mangleVarArgSymbolName(symbol) : Emitter.mangleSymbolName(symbol));
-        };
-
         Emitter.prototype.emitVariableStatement = function (ast) {
             if (TypeScript.hasFlag(ast.getFlags(), TypeScript.ASTFlags.EnumElement)) {
                 this.emitEnumElement(ast.declaration.declarators.members[0]);
@@ -56515,12 +56506,18 @@ else if (name.indexOf('.') < 0)
             }
         };
 
-        Emitter.mangleNameText = function (text) {
-            return Emitter.MANGLE_NAMES ? text + '$mangled' : text;
+        Emitter.mangleVarArgSymbolName = function (symbol) {
+            throw new Error('foo');
+            return symbol.getDisplayName() + '$rest';
         };
 
-        Emitter.mangleVarArgSymbolName = function (symbol) {
-            return symbol.getDisplayName() + '$rest';
+        Emitter.isAmbientSymbol = function (symbol) {
+            var path = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
+            for (var i = 0; i < path.length; i++) {
+                if (TypeScript.hasFlag(path[i].flags, TypeScript.DeclFlags.Ambient))
+                    return true;
+            }
+            return false;
         };
 
         Emitter.shouldMangleSymbol = function (symbol) {
@@ -56538,10 +56535,11 @@ else if (name.indexOf('.') < 0)
             if (!/\.ts$/.test(rootPath) || /\.d\.ts$/.test(rootPath))
                 return false;
 
-            for (var i = 0; i < path.length; i++) {
-                if (TypeScript.hasFlag(path[i].flags, TypeScript.DeclFlags.Ambient))
-                    return false;
-            }
+            if (Emitter.isAmbientSymbol(symbol))
+                return false;
+
+            if (symbol.kind !== TypeScript.PullElementKind.Property && Emitter.getFullSymbolName(symbol, ShouldMangle.NO).indexOf('.') < 0)
+                return false;
 
             if (Emitter.symbolsToAvoidMangling.indexOf(symbol) >= 0)
                 return false;
@@ -56551,7 +56549,7 @@ else if (name.indexOf('.') < 0)
 
         Emitter.mangleSymbolName = function (symbol) {
             var name = symbol.getDisplayName();
-            return Emitter.shouldMangleSymbol(symbol) ? Emitter.mangleNameText(name) : name;
+            return Emitter.shouldMangleSymbol(symbol) ? name + '$mangled' : name;
         };
 
         Emitter.getFullSymbolName = function (symbol, shouldMangle) {
@@ -56572,7 +56570,7 @@ else if (name.indexOf('.') < 0)
 
             return path.slice(i).map(function (pullDecl) {
                 var symbol = pullDecl.getSymbol();
-                return shouldMangle === ShouldMangle.YES ? Emitter.mangleSymbolName(symbol) : symbol.name;
+                return symbol === null ? 'null' : shouldMangle === ShouldMangle.YES ? Emitter.mangleSymbolName(symbol) : symbol.name;
             }).join('.');
         };
 
@@ -56713,9 +56711,17 @@ else if (name.indexOf('.') < 0)
             return ['@typedef {' + Emitter.formatJSDocType(type, IgnoreName.YES) + '}'];
         };
 
-        Emitter.prototype.getJSDocForFunctionDeclaration = function (funcDecl) {
+        Emitter.prototype.getFunctionDeclarationSignature = function (funcDecl) {
             var type = this.getSymbolForAST(funcDecl).type;
             var signature = type.getCallSignatures().concat(type.getConstructSignatures())[0];
+            if (signature.parameters.length !== funcDecl.arguments.members.length) {
+                throw new Error('Internal error');
+            }
+            return signature;
+        };
+
+        Emitter.prototype.getJSDocForFunctionDeclaration = function (funcDecl) {
+            var signature = this.getFunctionDeclarationSignature(funcDecl);
             return Emitter.getJSDocForArguments(signature.parameters).concat(funcDecl.isConstructor ? this.getJSDocForConstructor(funcDecl.classDecl) : signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? Emitter.getJSDocForReturnType(signature.returnType) : Emitter.EMPTY_STRING_LIST);
         };
 
@@ -56827,7 +56833,7 @@ else
             });
         };
 
-        Emitter.preventManglingOfExternalSymbols = function (compiler, ioHost) {
+        Emitter.preventManglingOfAmbientSymbols = function (compiler, ioHost) {
             if (!Emitter.MANGLE_NAMES)
                 return;
 
@@ -56891,7 +56897,7 @@ else
                         case TypeScript.NodeType.VariableDeclarator:
                             var symbol = compiler.semanticInfoChain.getSymbolForAST(path.ast(), fileName) || null;
                             if (symbol !== null) {
-                                if (!Emitter.shouldMangleSymbol(symbol))
+                                if (Emitter.isAmbientSymbol(symbol))
                                     preventManglingOfSymbol(symbol);
 else if (symbol.type !== null)
                                     preventManglingOfInheritedMembers(symbol.type);
@@ -56906,7 +56912,7 @@ else if (symbol.type !== null)
 
         Emitter.preprocessCompilerInput = function (compiler, ioHost) {
             Emitter.detectConstants(compiler, ioHost);
-            Emitter.preventManglingOfExternalSymbols(compiler, ioHost);
+            Emitter.preventManglingOfAmbientSymbols(compiler, ioHost);
         };
         Emitter.EMPTY_STRING_LIST = [];
 
