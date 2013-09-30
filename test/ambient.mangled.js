@@ -24,35 +24,38 @@ new M.Foo(2).baz();
  * @struct
  * @extends {Foo}
  */
-var Bar$mangled = function () {
+var Bar = function () {
   Foo.apply(this, arguments);
 };
 
-__extends(Bar$mangled, Foo);
+__extends(Bar, Foo);
 
-Bar$mangled.prototype.baz = function () {
+Bar.prototype.baz = function () {
   Foo.prototype.baz.call(this);
 };
 /**
  * @returns {string}
  */
-Bar$mangled.prototype.toString = function () {
+Bar.prototype.toString = function () {
   return '';
 };
-new Bar$mangled(3).baz();
+new Bar(3).baz();
 
 /**
  * @constructor
  * @struct
  */
-var Baz$mangled = function () {
+var Baz = function () {
 };
 
 /**
  * @returns {string}
  */
-Baz$mangled.prototype.toString = function () {
+Baz.prototype.toString = function () {
   return '';
 };
 
-new Baz$mangled().toString();
+new Baz().toString();
+
+/** @type {?} */ var x;
+x.foo().bar();

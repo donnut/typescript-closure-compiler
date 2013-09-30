@@ -1,11 +1,11 @@
-var NonNullable$mangled = {};
+var NonNullable = {};
 
-/** @type {boolean} */ NonNullable$mangled.a$mangled = false;
-/** @type {number} */ NonNullable$mangled.b$mangled = 0;
-/** @type {string} */ NonNullable$mangled.c$mangled = '';
+/** @type {boolean} */ NonNullable.a$mangled = false;
+/** @type {number} */ NonNullable.b$mangled = 0;
+/** @type {string} */ NonNullable.c$mangled = '';
 
-var Nullable$mangled = {};
+var Nullable = {};
 
-/** @type {?boolean} */ Nullable$mangled.a$mangled = null;
-/** @type {?number} */ Nullable$mangled.b$mangled = null;
-/** @type {?string} */ Nullable$mangled.c$mangled = null;
+/** @type {?boolean} */ Nullable.a$mangled = null;
+/** @type {?number} */ Nullable.b$mangled = null;
+/** @type {?string} */ Nullable.c$mangled = null;

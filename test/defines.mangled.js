@@ -1,6 +1,6 @@
 /**
  * compile with --define mod.foo
  */
-var mod$mangled = {};
+var mod = {};
 
-/** @define {boolean} */ mod$mangled.foo$mangled = false;
+/** @define {boolean} */ mod.foo$mangled = false;

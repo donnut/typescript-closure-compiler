@@ -56,3 +56,6 @@ Baz.prototype.toString = function () {
 };
 
 new Baz().toString();
+
+/** @type {?} */ var x;
+x.foo().bar();

@@ -12,86 +12,86 @@ var __extends = function (d, b) {
 /**
  * @constructor
  * @struct
- * @implements {IFoo$mangled}
+ * @implements {IFoo}
  */
-var Foo$mangled = function () {
+var Foo = function () {
 };
 
 /**
- * @param {?} a$mangled
- * @param {?} b$mangled
+ * @param {?} a
+ * @param {?} b
  * @returns {boolean}
  */
-Foo$mangled.prototype.foo$mangled = function (a$mangled, b$mangled) {
+Foo.prototype.foo$mangled = function (a, b) {
   return false;
 };
 
 /**
  * @constructor
  * @struct
- * @extends {Foo$mangled}
+ * @extends {Foo}
  */
-var Bar$mangled = function () {
-  Foo$mangled.apply(this, arguments);
+var Bar = function () {
+  Foo.apply(this, arguments);
 };
 
-__extends(Bar$mangled, Foo$mangled);
+__extends(Bar, Foo);
 
 /**
- * @param {?} a$mangled
- * @param {?} b$mangled
+ * @param {?} a
+ * @param {?} b
  * @returns {boolean}
  */
-Bar$mangled.prototype.bar$mangled = function (a$mangled, b$mangled) {
+Bar.prototype.bar$mangled = function (a, b) {
   return false;
 };
 
 /**
  * @interface
  */
-var IFoo$mangled = function () {
+var IFoo = function () {
 };
 
 /**
- * @param {?} a$mangled
- * @param {?} b$mangled
+ * @param {?} a
+ * @param {?} b
  * @returns {boolean}
  */
-IFoo$mangled.prototype.foo$mangled = function (a$mangled, b$mangled) {
+IFoo.prototype.foo$mangled = function (a, b) {
 };
 
 /**
  * @interface
- * @extends {IFoo$mangled}
+ * @extends {IFoo}
  */
-var IBar$mangled = function () {
+var IBar = function () {
 };
 
 /**
- * @param {?} a$mangled
- * @param {?} b$mangled
+ * @param {?} a
+ * @param {?} b
  * @returns {boolean}
  */
-IBar$mangled.prototype.bar$mangled = function (a$mangled, b$mangled) {
+IBar.prototype.bar$mangled = function (a, b) {
 };
 
 /**
- * @param {?} a$mangled
- * @param {?} b$mangled
- * @param {Foo$mangled} foo$mangled
- * @param {IFoo$mangled} ifoo$mangled
+ * @param {?} a
+ * @param {?} b
+ * @param {Foo} foo
+ * @param {IFoo} ifoo
  * @returns {boolean}
  */
-var foo$mangled = function (a$mangled, b$mangled, foo$mangled, ifoo$mangled) {
+var foo = function (a, b, foo, ifoo) {
   return false;
 };
 
 /**
  * @typedef {Object.<string, ?>}
  */
-var IndexFoo$mangled;
+var IndexFoo;
 
 /**
  * @typedef {?function(string): ?}
  */
-var CallFoo$mangled;
+var CallFoo;

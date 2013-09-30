@@ -502,27 +502,17 @@ module TypeScript {
       if (printName && isFunctionExpression) {
         var id = funcDecl.getNameText();
         if (id && !funcDecl.isAccessor()) {
-          this.writeToOutput(Emitter.mangleNameText(id));
+          this.writeToOutput(id);
         }
       }
 
       this.writeToOutput("(");
-      var argsLen = 0;
       if (funcDecl.arguments) {
         this.emitComments(funcDecl.arguments, true);
-
-        var tempContainer = this.setContainer(EmitContainer.Args);
-        argsLen = funcDecl.arguments.members.length;
-        for (var i = 0; i < argsLen; i++) {
-          var arg = <Parameter>funcDecl.arguments.members[i];
-          arg.emit(this);
-
-          if (i < argsLen - 1) {
-            this.writeToOutput(", ");
-          }
-        }
-        this.setContainer(tempContainer);
-
+        this.getFunctionDeclarationSignature(funcDecl).parameters.forEach((symbol, i) => {
+          if (i > 0) this.writeToOutput(', ');
+          this.writeToOutput(symbol.isVarArg ? Emitter.mangleVarArgSymbolName(symbol) : Emitter.mangleSymbolName(symbol));
+        });
         this.emitComments(funcDecl.arguments, false);
       }
       this.writeLineToOutput(") {");
@@ -576,13 +566,14 @@ module TypeScript {
         this.writeToOutput(';');
       }
 
-      // The extra call is to make sure the caller's funcDecl end is recorded, since caller wont be able to record it
+      // The extra call is to make sure the caller's funcDecl end is recorded, since caller won't be able to record it
       this.recordSourceMappingEnd(funcDecl);
 
       this.emitComments(funcDecl, false);
     }
 
     private emitDefaultValueAssignments(funcDecl: FunctionDeclaration) {
+      var parameters = this.getFunctionDeclarationSignature(funcDecl).parameters;
       var n = funcDecl.arguments.members.length;
       if (funcDecl.variableArgList) {
         n--;
@@ -591,11 +582,12 @@ module TypeScript {
       for (var i = 0; i < n; i++) {
         var arg = <Parameter>funcDecl.arguments.members[i];
         if (arg.init) {
+          var mangled: string = Emitter.mangleSymbolName(parameters[i]);
           this.emitIndent();
           this.recordSourceMappingStart(arg);
-          this.writeToOutput("if (typeof " + Emitter.mangleSymbolName(this.getSymbolForAST(arg)) + " === \"undefined\") ");
+          this.writeToOutput("if (typeof " + mangled + " === \"undefined\") ");
           this.recordSourceMappingStart(arg.id);
-          this.writeToOutput(Emitter.mangleSymbolName(this.getSymbolForAST(arg)));
+          this.writeToOutput(mangled);
           this.recordSourceMappingEnd(arg.id);
           this.writeToOutput(" = ");
           this.emitJavascript(arg.init, false);
@@ -828,7 +820,7 @@ module TypeScript {
           // This is caused by PullTypeResolver.resolveNameExpression avoiding
           // names with the any type and happens when referencing the symbol
           // for a try/catch statement among other things
-          this.writeToOutput(Emitter.mangleNameText(name.text()));
+          this.writeToOutput(name.text());
         } else if (isNotMemberAccess) {
           this.writeToOutput(Emitter.getFullSymbolName(pullSymbol));
         } else {
@@ -916,22 +908,24 @@ module TypeScript {
 
     private emitParameterPropertyAndMemberVariableAssignments() {
       // emit any parameter properties first
-      var constructorDecl = this.thisClassNode.constructorDecl;
+      var constructorDecl: FunctionDeclaration = this.thisClassNode.constructorDecl;
 
       if (constructorDecl && constructorDecl.arguments) {
+        var parameters = this.getFunctionDeclarationSignature(constructorDecl).parameters;
         for (var i = 0, n = constructorDecl.arguments.members.length; i < n; i++) {
           var arg = <BoundDecl>constructorDecl.arguments.members[i];
           if ((arg.getVarFlags() & TypeScript.VariableFlags.Property) !== TypeScript.VariableFlags.None) {
-            var symbol: PullSymbol = this.getSymbolForAST(arg);
+            var memberSymbol: PullSymbol = this.getSymbolForAST(arg);
+            var argumentSymbol: PullSymbol = parameters[i];
             this.emitIndent();
             this.recordSourceMappingStart(arg);
             this.recordSourceMappingStart(arg.id);
-            this.emitInlineJSDocComment(Emitter.getUserComments(arg), Emitter.getJSDocForType(symbol.type));
-            this.writeToOutput("this." + Emitter.mangleSymbolName(symbol));
+            this.emitInlineJSDocComment(Emitter.getUserComments(arg), Emitter.getJSDocForType(memberSymbol.type));
+            this.writeToOutput("this." + Emitter.mangleSymbolName(memberSymbol));
             this.recordSourceMappingEnd(arg.id);
             this.writeToOutput(" = ");
             this.recordSourceMappingStart(arg.id);
-            this.writeToOutput(Emitter.mangleSymbolName(symbol));
+            this.writeToOutput(Emitter.mangleSymbolName(argumentSymbol));
             this.recordSourceMappingEnd(arg.id);
             this.writeLineToOutput(";");
             this.recordSourceMappingEnd(arg);
@@ -1528,13 +1522,6 @@ module TypeScript {
       }
     }
 
-    public emitParameter(ast: Parameter) {
-      var symbol: PullSymbol = this.getSymbolForAST(ast);
-      this.writeToOutput(symbol.isVarArg
-        ? Emitter.mangleVarArgSymbolName(symbol)
-        : Emitter.mangleSymbolName(symbol));
-    }
-
     public emitVariableStatement(ast: VariableStatement) {
       if (TypeScript.hasFlag(ast.getFlags(), TypeScript.ASTFlags.EnumElement)) {
         this.emitEnumElement(<VariableDeclarator>ast.declaration.declarators.members[0]);
@@ -1651,12 +1638,16 @@ module TypeScript {
     // Helps with type checking due to --noImplicitAny
     private static EMPTY_STRING_LIST: string[] = [];
 
-    private static mangleNameText(text: string): string {
-      return Emitter.MANGLE_NAMES ? text + '$mangled' : text;
-    }
-
     private static mangleVarArgSymbolName(symbol: PullSymbol): string {
       return symbol.getDisplayName() + '$rest';
+    }
+
+    private static isAmbientSymbol(symbol: PullSymbol): boolean {
+      var path: PullDecl[] = TypeScript.getPathToDecl(symbol.getDeclarations()[0]);
+      for (var i = 0; i < path.length; i++) {
+        if (TypeScript.hasFlag(path[i].flags, TypeScript.DeclFlags.Ambient)) return true;
+      }
+      return false;
     }
 
     private static shouldMangleSymbol(symbol: PullSymbol): boolean {
@@ -1673,9 +1664,10 @@ module TypeScript {
       if (!/\.ts$/.test(rootPath) || /\.d\.ts$/.test(rootPath)) return false;
 
       // Also avoid mangling names specified with the "declare" keyword
-      for (var i = 0; i < path.length; i++) {
-        if (TypeScript.hasFlag(path[i].flags, TypeScript.DeclFlags.Ambient)) return false;
-      }
+      if (Emitter.isAmbientSymbol(symbol)) return false;
+
+      // Only mangle a symbol name if it's a property
+      if (symbol.kind !== TypeScript.PullElementKind.Property && Emitter.getFullSymbolName(symbol, ShouldMangle.NO).indexOf('.') < 0) return false;
 
       // Finally, avoid mangling names that are used in the type of something externally visible
       if (Emitter.symbolsToAvoidMangling.indexOf(symbol) >= 0) return false;
@@ -1685,7 +1677,7 @@ module TypeScript {
 
     private static mangleSymbolName(symbol: PullSymbol): string {
       var name: string = symbol.getDisplayName();
-      return Emitter.shouldMangleSymbol(symbol) ? Emitter.mangleNameText(name) : name;
+      return Emitter.shouldMangleSymbol(symbol) ? name + '$mangled' : name;
     }
 
     private static getFullSymbolName(symbol: PullSymbol, shouldMangle: ShouldMangle = ShouldMangle.YES): string {
@@ -1708,7 +1700,9 @@ module TypeScript {
 
       return path.slice(i).map(pullDecl => {
         var symbol: PullSymbol = pullDecl.getSymbol();
-        return shouldMangle === ShouldMangle.YES ? Emitter.mangleSymbolName(symbol) : symbol.name;
+        return symbol === null
+          ? 'null' // Call signatures and index signatures don't have symbols
+          : shouldMangle === ShouldMangle.YES ? Emitter.mangleSymbolName(symbol) : symbol.name;
       }).join('.');
     }
 
@@ -1842,9 +1836,17 @@ module TypeScript {
       return ['@typedef {' + Emitter.formatJSDocType(type, IgnoreName.YES) + '}'];
     }
 
-    private getJSDocForFunctionDeclaration(funcDecl: FunctionDeclaration): string[] {
+    private getFunctionDeclarationSignature(funcDecl: FunctionDeclaration): PullSignatureSymbol {
       var type: PullTypeSymbol = this.getSymbolForAST(funcDecl).type;
       var signature: PullSignatureSymbol = type.getCallSignatures().concat(type.getConstructSignatures())[0];
+      if (signature.parameters.length !== funcDecl.arguments.members.length) {
+        throw new Error('Internal error');
+      }
+      return signature;
+    }
+
+    private getJSDocForFunctionDeclaration(funcDecl: FunctionDeclaration): string[] {
+      var signature: PullSignatureSymbol = this.getFunctionDeclarationSignature(funcDecl);
       return Emitter.getJSDocForArguments(signature.parameters).concat(
         funcDecl.isConstructor
           ? this.getJSDocForConstructor(funcDecl.classDecl)
@@ -1965,7 +1967,7 @@ module TypeScript {
       Emitter.detectedConstants = potentialConstants.filter(symbol => impossibleConstants.indexOf(symbol) === -1);
     }
 
-    private static preventManglingOfExternalSymbols(compiler: TypeScriptCompiler, ioHost: EmitterIOHost) {
+    private static preventManglingOfAmbientSymbols(compiler: TypeScriptCompiler, ioHost: EmitterIOHost) {
       if (!Emitter.MANGLE_NAMES) return;
 
       var symbolsToAvoidMangling: PullSymbol[] = [];
@@ -2024,7 +2026,7 @@ module TypeScript {
             case TypeScript.NodeType.VariableDeclarator:
               var symbol = compiler.semanticInfoChain.getSymbolForAST(path.ast(), fileName) || null;
               if (symbol !== null) {
-                if (!Emitter.shouldMangleSymbol(symbol)) preventManglingOfSymbol(symbol);
+                if (Emitter.isAmbientSymbol(symbol)) preventManglingOfSymbol(symbol);
                 else if (symbol.type !== null) preventManglingOfInheritedMembers(symbol.type);
               }
               break;
@@ -2037,7 +2039,7 @@ module TypeScript {
 
     public static preprocessCompilerInput(compiler: TypeScriptCompiler, ioHost: EmitterIOHost) {
       Emitter.detectConstants(compiler, ioHost);
-      Emitter.preventManglingOfExternalSymbols(compiler, ioHost);
+      Emitter.preventManglingOfAmbientSymbols(compiler, ioHost);
     }
 
     // This will be set by tscc, which checks command line flags

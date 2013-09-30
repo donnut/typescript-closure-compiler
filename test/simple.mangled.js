@@ -9,394 +9,393 @@ var __extends = function (d, b) {
   d.prototype = new __();
 };
 
-/** @type {?Object} */ var empty$mangled = {};
+/** @type {?Object} */ var empty = {};
 
 /**
  * @enum {number}
  */
-var Foo$mangled = {
+var Foo = {
   ABC$mangled: 0,
   XYZ$mangled: 100
 };
 
-/** @type {number} */ var v$mangled = 0;
-/** @type {boolean} */ var v1$mangled = false;
-/** @type {number} */ var v2$mangled = 0;
+/** @type {number} */ var v = 0;
+/** @type {boolean} */ var v1 = false;
+/** @type {number} */ var v2 = 0;
 
 /**
  * @constructor
  * @struct
  */
-var A$mangled = function () {
+var A = function () {
   /** @type {number} */ this.a$mangled;
   /** @type {number} */ this.e$mangled = 0;
 };
 
 /**
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-A$mangled.prototype.c$mangled = function (a$mangled) {
-  new A$mangled();
-  return a$mangled === v$mangled;
+A.prototype.c$mangled = function (a) {
+  new A();
+  return a === v;
 };
 /**
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-A$mangled.d$mangled = function (a$mangled) {
-  new A$mangled();
-  return a$mangled === v$mangled;
+A.d$mangled = function (a) {
+  new A();
+  return a === v;
 };
 
-/** @type {number} */ A$mangled.b$mangled;
+/** @type {number} */ A.b$mangled;
 
-/** @type {number} */ A$mangled.f$mangled = 0;
+/** @type {number} */ A.f$mangled = 0;
 
 /**
  * @constructor
  * @struct
- * @extends {A$mangled}
- * @implements {I$mangled}
+ * @extends {A}
+ * @implements {I}
  */
-var B$mangled = function () {
-  A$mangled.call(this);
-  /** @type {?} */ var capture$mangled = /** @type {?} */ (A$mangled.prototype);
+var B = function () {
+  A.call(this);
+  /** @type {?} */ var capture = /** @type {?} */ (A.prototype);
 };
 
-__extends(B$mangled, A$mangled);
+__extends(B, A);
 
 /**
  * @interface
  */
-var I$mangled = function () {
+var I = function () {
 };
 
-/** @type {number} */ I$mangled.prototype.a$mangled;
+/** @type {number} */ I.prototype.a$mangled;
 /**
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-I$mangled.prototype.c$mangled = function (a$mangled) {
+I.prototype.c$mangled = function (a) {
 };
 
 /**
- * @param {number} index$mangled
+ * @param {number} index
  * @returns {string}
  */
-var f$mangled = function (index$mangled) {
-  /** @type {?} */ var a$mangled;
-  /** @type {undefined} */ var b$mangled = void 0;
-  /** @type {number} */ var c$mangled = 0;
-  /** @type {string} */ var d$mangled = '';
-  /** @type {boolean} */ var e$mangled = false;
-  /** @type {Array.<?>} */ var f$mangled = [];
-  /** @type {Array.<string>} */ var g$mangled = [''];
-  /** @type {Array.<Array.<string>>} */ var h$mangled = [['']];
-  /** @type {?function(): number} */ var i$mangled = function () {
+var f = function (index) {
+  /** @type {?} */ var a;
+  /** @type {undefined} */ var b = void 0;
+  /** @type {number} */ var c = 0;
+  /** @type {string} */ var d = '';
+  /** @type {boolean} */ var e = false;
+  /** @type {Array.<?>} */ var f = [];
+  /** @type {Array.<string>} */ var g = [''];
+  /** @type {Array.<Array.<string>>} */ var h = [['']];
+  /** @type {?function(): number} */ var i = function () {
     return 0;
   };
-  /** @type {?{ 0: string }} */ var j$mangled = { 0: 'a' };
-  /** @type {?{ a$mangled: number }} */ var k$mangled = { a$mangled: 0 };
-  /** @type {Object.<number, string>} */ var l$mangled = { 0: 'a' };
-  /** @type {Object.<string, number>} */ var m$mangled = { a$mangled: 0 };
-  /** @type {?} */ var n$mangled = { 'a': 0 };
+  /** @type {?{ 0: string }} */ var j = { 0: 'a' };
+  /** @type {?{ a$mangled: number }} */ var k = { a$mangled: 0 };
+  /** @type {Object.<number, string>} */ var l = { 0: 'a' };
+  /** @type {Object.<string, number>} */ var m = { 'a': 0 };
   return '';
 };
 
-var M$mangled = {};
+var M = {};
 
 /**
  * @enum {number}
  */
-M$mangled.Foo$mangled = {
+M.Foo$mangled = {
   ABC$mangled: 0,
   XYZ$mangled: 100
 };
 
-/** @type {number} */ M$mangled.v$mangled = 0;
-/** @type {boolean} */ M$mangled.v1$mangled = false;
-/** @type {number} */ M$mangled.v2$mangled = 0;
+/** @type {number} */ M.v$mangled = 0;
+/** @type {boolean} */ M.v1$mangled = false;
+/** @type {number} */ M.v2$mangled = 0;
 
 /**
  * @constructor
  * @struct
  */
-M$mangled.A$mangled = function () {
+M.A$mangled = function () {
   /** @type {number} */ this.a$mangled;
   /** @type {number} */ this.e$mangled = 0;
 };
 
 /**
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-M$mangled.A$mangled.prototype.c$mangled = function (a$mangled) {
-  new M$mangled.A$mangled();
-  return a$mangled === M$mangled.v$mangled;
+M.A$mangled.prototype.c$mangled = function (a) {
+  new M.A$mangled();
+  return a === M.v$mangled;
 };
 /**
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-M$mangled.A$mangled.d$mangled = function (a$mangled) {
-  new M$mangled.A$mangled();
-  return a$mangled === M$mangled.v$mangled;
+M.A$mangled.d$mangled = function (a) {
+  new M.A$mangled();
+  return a === M.v$mangled;
 };
 
-/** @type {number} */ M$mangled.A$mangled.b$mangled;
+/** @type {number} */ M.A$mangled.b$mangled;
 
-/** @type {number} */ M$mangled.A$mangled.f$mangled = 0;
+/** @type {number} */ M.A$mangled.f$mangled = 0;
 
 /**
  * @constructor
  * @struct
- * @extends {M$mangled.A$mangled}
- * @implements {M$mangled.I$mangled}
+ * @extends {M.A$mangled}
+ * @implements {M.I$mangled}
  */
-M$mangled.B$mangled = function () {
-  M$mangled.A$mangled.call(this);
-  /** @type {?} */ var capture$mangled = /** @type {?} */ (M$mangled.A$mangled.prototype);
+M.B$mangled = function () {
+  M.A$mangled.call(this);
+  /** @type {?} */ var capture = /** @type {?} */ (M.A$mangled.prototype);
 };
 
-__extends(M$mangled.B$mangled, M$mangled.A$mangled);
+__extends(M.B$mangled, M.A$mangled);
 
 /**
  * @interface
  */
-M$mangled.I$mangled = function () {
+M.I$mangled = function () {
 };
 
-/** @type {number} */ M$mangled.I$mangled.prototype.a$mangled;
+/** @type {number} */ M.I$mangled.prototype.a$mangled;
 /**
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-M$mangled.I$mangled.prototype.c$mangled = function (a$mangled) {
+M.I$mangled.prototype.c$mangled = function (a) {
 };
 
 /**
- * @param {number} index$mangled
+ * @param {number} index
  * @returns {string}
  */
-M$mangled.f$mangled = function (index$mangled) {
-  var g$mangled = function () {
-    /** @type {number} */ var h$mangled = 0;
+M.f$mangled = function (index) {
+  var g = function () {
+    /** @type {number} */ var h = 0;
   };
-  /** @type {number} */ var x$mangled = index$mangled;
+  /** @type {number} */ var x = index;
   return '';
 };
 
-M$mangled.MM$mangled = {};
+M.MM$mangled = {};
 
 /**
  * @enum {number}
  */
-M$mangled.MM$mangled.Foo$mangled = {
+M.MM$mangled.Foo$mangled = {
   ABC$mangled: 0,
   XYZ$mangled: 100
 };
 
-/** @type {number} */ M$mangled.MM$mangled.v$mangled = 0;
-/** @type {boolean} */ M$mangled.MM$mangled.v1$mangled = false;
-/** @type {number} */ M$mangled.MM$mangled.v2$mangled = 0;
+/** @type {number} */ M.MM$mangled.v$mangled = 0;
+/** @type {boolean} */ M.MM$mangled.v1$mangled = false;
+/** @type {number} */ M.MM$mangled.v2$mangled = 0;
 
 /**
  * @constructor
  * @struct
  */
-M$mangled.MM$mangled.A$mangled = function () {
+M.MM$mangled.A$mangled = function () {
   /** @type {number} */ this.a$mangled;
   /** @type {number} */ this.e$mangled = 0;
 };
 
 /**
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-M$mangled.MM$mangled.A$mangled.prototype.c$mangled = function (a$mangled) {
-  new M$mangled.MM$mangled.A$mangled();
-  return a$mangled === M$mangled.MM$mangled.v$mangled;
+M.MM$mangled.A$mangled.prototype.c$mangled = function (a) {
+  new M.MM$mangled.A$mangled();
+  return a === M.MM$mangled.v$mangled;
 };
 /**
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-M$mangled.MM$mangled.A$mangled.d$mangled = function (a$mangled) {
-  new M$mangled.MM$mangled.A$mangled();
-  return a$mangled === M$mangled.MM$mangled.v$mangled;
+M.MM$mangled.A$mangled.d$mangled = function (a) {
+  new M.MM$mangled.A$mangled();
+  return a === M.MM$mangled.v$mangled;
 };
 
-/** @type {number} */ M$mangled.MM$mangled.A$mangled.b$mangled;
+/** @type {number} */ M.MM$mangled.A$mangled.b$mangled;
 
-/** @type {number} */ M$mangled.MM$mangled.A$mangled.f$mangled = 0;
+/** @type {number} */ M.MM$mangled.A$mangled.f$mangled = 0;
 
 /**
  * @constructor
  * @struct
- * @extends {M$mangled.MM$mangled.A$mangled}
- * @implements {M$mangled.MM$mangled.I$mangled}
+ * @extends {M.MM$mangled.A$mangled}
+ * @implements {M.MM$mangled.I$mangled}
  */
-M$mangled.MM$mangled.B$mangled = function () {
-  M$mangled.MM$mangled.A$mangled.call(this);
-  /** @type {?} */ var capture$mangled = /** @type {?} */ (M$mangled.MM$mangled.A$mangled.prototype);
+M.MM$mangled.B$mangled = function () {
+  M.MM$mangled.A$mangled.call(this);
+  /** @type {?} */ var capture = /** @type {?} */ (M.MM$mangled.A$mangled.prototype);
 };
 
-__extends(M$mangled.MM$mangled.B$mangled, M$mangled.MM$mangled.A$mangled);
+__extends(M.MM$mangled.B$mangled, M.MM$mangled.A$mangled);
 
 /**
  * @interface
  */
-M$mangled.MM$mangled.I$mangled = function () {
+M.MM$mangled.I$mangled = function () {
 };
 
-/** @type {number} */ M$mangled.MM$mangled.I$mangled.prototype.a$mangled;
+/** @type {number} */ M.MM$mangled.I$mangled.prototype.a$mangled;
 /**
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-M$mangled.MM$mangled.I$mangled.prototype.c$mangled = function (a$mangled) {
+M.MM$mangled.I$mangled.prototype.c$mangled = function (a) {
 };
 
 /**
- * @param {number} index$mangled
+ * @param {number} index
  * @returns {string}
  */
-M$mangled.MM$mangled.f$mangled = function (index$mangled) {
-  /** @type {number} */ var x$mangled = index$mangled;
-  /** @type {?{ foo$mangled: ?function(new:M$mangled.MM$mangled.I$mangled, number, number) }} */ var y$mangled = null;
-  /** @type {?} */ var z$mangled = null;
-  /** @type {?} */ var w$mangled = { 'foo bar': 0 };
-  /** @type {?function(): ?} */ var functionExpression1$mangled = function foo$mangled() {
-    return foo$mangled;
+M.MM$mangled.f$mangled = function (index) {
+  /** @type {number} */ var x = index;
+  /** @type {?{ foo$mangled: ?function(new:M.MM$mangled.I$mangled, number, number) }} */ var y = null;
+  /** @type {?} */ var z = null;
+  /** @type {?} */ var w = { 'foo bar': 0 };
+  /** @type {?function(): ?} */ var functionExpression1 = function foo() {
+    return foo;
   };
-  /** @type {?{ foo$mangled: ?function(): ? }} */ var functionExpression2$mangled = { foo$mangled: function bar$mangled() {
-      return bar$mangled;
+  /** @type {?{ foo$mangled: ?function(): ? }} */ var functionExpression2 = { foo$mangled: function bar() {
+      return bar;
     } };
   return '';
 };
 
-/** @type {?function(): ?} */ M$mangled.MM$mangled.functionExpression1$mangled = function foo$mangled() {
-  return foo$mangled;
+/** @type {?function(): ?} */ M.MM$mangled.functionExpression1$mangled = function foo() {
+  return foo;
 };
-/** @type {?{ foo$mangled: ?function(): ? }} */ M$mangled.MM$mangled.functionExpression2$mangled = { foo$mangled: function bar$mangled() {
-    return bar$mangled;
+/** @type {?{ foo$mangled: ?function(): ? }} */ M.MM$mangled.functionExpression2$mangled = { foo$mangled: function bar() {
+    return bar;
   } };
 
-M$mangled.MM$mangled.tryCatch1$mangled = function () {
+M.MM$mangled.tryCatch1$mangled = function () {
   try  {
-    /** @type {?} */ var foo$mangled;
-    foo$mangled = 100;
-    foo$mangled = '';
-  } catch (e$mangled) {
-    foo$mangled = e$mangled;
+    /** @type {?} */ var foo;
+    foo = 100;
+    foo = '';
+  } catch (e) {
+    foo = e;
   }
 };
 
-M$mangled.MM$mangled.tryCatch2$mangled = function () {
+M.MM$mangled.tryCatch2$mangled = function () {
   try  {
     try  {
       throw null;
-    } catch (e$mangled) {
+    } catch (e) {
     }
-    /** @type {?} */ var foo$mangled;
-    foo$mangled = 100;
-    foo$mangled = '';
-  } catch (e$mangled) {
-    foo$mangled = e$mangled;
+    /** @type {?} */ var foo;
+    foo = 100;
+    foo = '';
+  } catch (e) {
+    foo = e;
   }
 };
 
 /**
- * @typedef {Object.<string, M$mangled.MM$mangled.A$mangled>}
+ * @typedef {Object.<string, M.MM$mangled.A$mangled>}
  */
-M$mangled.MM$mangled.IndexFoo$mangled;
+M.MM$mangled.IndexFoo$mangled;
 
 /**
- * @typedef {(Object.<string, M$mangled.MM$mangled.A$mangled>|Object.<number, M$mangled.MM$mangled.B$mangled>)}
+ * @typedef {(Object.<string, M.MM$mangled.A$mangled>|Object.<number, M.MM$mangled.B$mangled>)}
  */
-M$mangled.MM$mangled.IndexFoo2$mangled;
+M.MM$mangled.IndexFoo2$mangled;
 
 /**
- * @typedef {?function(string): M$mangled.MM$mangled.A$mangled}
+ * @typedef {?function(string): M.MM$mangled.A$mangled}
  */
-M$mangled.MM$mangled.CallFoo$mangled;
+M.MM$mangled.CallFoo$mangled;
 
 /**
- * @typedef {(?function(string): M$mangled.MM$mangled.A$mangled|?function(number): M$mangled.MM$mangled.B$mangled)}
+ * @typedef {(?function(string): M.MM$mangled.A$mangled|?function(number): M.MM$mangled.B$mangled)}
  */
-M$mangled.MM$mangled.CallFoo2$mangled;
+M.MM$mangled.CallFoo2$mangled;
 
 /**
  * @param {...number} foo$rest
  * @returns {number}
  */
-M$mangled.MM$mangled.test1$mangled = function (foo$rest) {
-  /** @type {Array.<number>} */ var foo$mangled = [];
+M.MM$mangled.test1$mangled = function (foo$rest) {
+  /** @type {Array.<number>} */ var foo = [];
   for (var _i = 0; _i < arguments.length; _i++) {
-    foo$mangled[_i] = arguments[_i];
+    foo[_i] = arguments[_i];
   }
-  return foo$mangled.length;
+  return foo.length;
 };
 
 /**
- * @param {string} a$mangled
- * @param {string} b$mangled
+ * @param {string} a
+ * @param {string} b
  * @param {...number} foo$rest
  * @returns {number}
  */
-M$mangled.MM$mangled.test2$mangled = function (a$mangled, b$mangled, foo$rest) {
-  /** @type {Array.<number>} */ var foo$mangled = [];
+M.MM$mangled.test2$mangled = function (a, b, foo$rest) {
+  /** @type {Array.<number>} */ var foo = [];
   for (var _i = 0; _i < arguments.length - 2; _i++) {
-    foo$mangled[_i] = arguments[_i + 2];
+    foo[_i] = arguments[_i + 2];
   }
-  return foo$mangled.length;
+  return foo.length;
 };
 
 /**
- * @param {boolean} a$mangled
- * @param {string=} b$mangled
- * @param {number=} c$mangled
+ * @param {boolean} a
+ * @param {string=} b
+ * @param {number=} c
  */
-M$mangled.MM$mangled.test3$mangled = function (a$mangled, b$mangled, c$mangled) {
-  if (typeof b$mangled === "undefined") b$mangled = '';
-  if (typeof c$mangled === "undefined") c$mangled = 0;
+M.MM$mangled.test3$mangled = function (a, b, c) {
+  if (typeof b === "undefined") b = '';
+  if (typeof c === "undefined") c = 0;
 };
 
-/** @type {?function(...[?])} */ M$mangled.MM$mangled.test4$mangled = null;
-/** @type {?function(...[number])} */ M$mangled.MM$mangled.test5$mangled = null;
+/** @type {?function(...[?])} */ M.MM$mangled.test4$mangled = null;
+/** @type {?function(...[number])} */ M.MM$mangled.test5$mangled = null;
 
 /**
- * @param {number=} baz$mangled
+ * @param {number=} baz
  * @constructor
  * @struct
  */
-M$mangled.MM$mangled.Test1$mangled = function (baz$mangled) {
-  if (typeof baz$mangled === "undefined") baz$mangled = 3;
-  /** @type {number} */ this.baz$mangled = baz$mangled;
+M.MM$mangled.Test1$mangled = function (baz) {
+  if (typeof baz === "undefined") baz = 3;
+  /** @type {number} */ this.baz$mangled = baz;
   /** @type {number} */ this.foo$mangled = 1;
 };
 
-M$mangled.MM$mangled.Test1$mangled.prototype.f$mangled = function () {
+M.MM$mangled.Test1$mangled.prototype.f$mangled = function () {
   var _this = this;
-  /** @type {?function(): number} */ var foo$mangled = function () {
+  /** @type {?function(): number} */ var foo = function () {
     return _this.foo$mangled;
   };
 };
 
-/** @type {number} */ M$mangled.MM$mangled.Test1$mangled.bar$mangled = 2;
+/** @type {number} */ M.MM$mangled.Test1$mangled.bar$mangled = 2;
 
 /**
  * @constructor
  * @struct
- * @extends {M$mangled.MM$mangled.Test1$mangled}
+ * @extends {M.MM$mangled.Test1$mangled}
  */
-M$mangled.MM$mangled.Test2$mangled = function () {
-  M$mangled.MM$mangled.Test1$mangled.call(this);
+M.MM$mangled.Test2$mangled = function () {
+  M.MM$mangled.Test1$mangled.call(this);
 };
 
-__extends(M$mangled.MM$mangled.Test2$mangled, M$mangled.MM$mangled.Test1$mangled);
+__extends(M.MM$mangled.Test2$mangled, M.MM$mangled.Test1$mangled);
 
-M$mangled.MM$mangled.Test2$mangled.prototype.f$mangled = function () {
-  M$mangled.MM$mangled.Test1$mangled.prototype.f$mangled.call(this);
+M.MM$mangled.Test2$mangled.prototype.f$mangled = function () {
+  M.MM$mangled.Test1$mangled.prototype.f$mangled.call(this);
 };

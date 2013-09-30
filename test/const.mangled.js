@@ -4,67 +4,67 @@
  * @constructor
  * @struct
  */
-var Foo$mangled = function () {
+var Foo = function () {
 };
 
-/** @const {?} */ var a$mangled = null;
-/** @const {boolean} */ var b$mangled = false;
-/** @const {boolean} */ var c$mangled = true;
-/** @const {number} */ var d$mangled = 0;
-/** @const {string} */ var e$mangled = '';
-/** @const {RegExp} */ var f$mangled = /./;
+/** @const {?} */ var a = null;
+/** @const {boolean} */ var b = false;
+/** @const {boolean} */ var c = true;
+/** @const {number} */ var d = 0;
+/** @const {string} */ var e = '';
+/** @const {RegExp} */ var f = /./;
 
-/** @type {Foo$mangled} */ var g$mangled = new Foo$mangled();
-/** @type {number} */ var h$mangled = 0;
-/** @type {number} */ var i$mangled = 0;
-h$mangled = 1;
-i$mangled++;
+/** @type {Foo} */ var g = new Foo();
+/** @type {number} */ var h = 0;
+/** @type {number} */ var i = 0;
+h = 1;
+i++;
 
-var M$mangled = {};
+var M = {};
 
-/** @const {?} */ M$mangled.a$mangled = null;
-/** @const {boolean} */ M$mangled.b$mangled = false;
-/** @const {boolean} */ M$mangled.c$mangled = true;
-/** @const {number} */ M$mangled.d$mangled = 0;
-/** @const {string} */ M$mangled.e$mangled = '';
-/** @const {RegExp} */ M$mangled.f$mangled = /./;
+/** @const {?} */ M.a$mangled = null;
+/** @const {boolean} */ M.b$mangled = false;
+/** @const {boolean} */ M.c$mangled = true;
+/** @const {number} */ M.d$mangled = 0;
+/** @const {string} */ M.e$mangled = '';
+/** @const {RegExp} */ M.f$mangled = /./;
 
-/** @type {Foo$mangled} */ M$mangled.g$mangled = new Foo$mangled();
-/** @type {number} */ M$mangled.h$mangled = 0;
-/** @type {number} */ M$mangled.i$mangled = 0;
-/** @type {number} */ M$mangled.j$mangled = 0;
-/** @type {number} */ M$mangled.k$mangled = 0;
-M$mangled.h$mangled = 1;
-M$mangled.i$mangled++;
-M$mangled.j$mangled = 1;
-M$mangled.k$mangled++;
+/** @type {Foo} */ M.g$mangled = new Foo();
+/** @type {number} */ M.h$mangled = 0;
+/** @type {number} */ M.i$mangled = 0;
+/** @type {number} */ M.j$mangled = 0;
+/** @type {number} */ M.k$mangled = 0;
+M.h$mangled = 1;
+M.i$mangled++;
+M.j$mangled = 1;
+M.k$mangled++;
 
 /**
  * @constructor
  * @struct
  */
-var C$mangled = function () {
+var C = function () {
   /** @type {?} */ this.A$mangled = null;
   /** @type {boolean} */ this.B$mangled = false;
   /** @type {boolean} */ this.C$mangled = true;
   /** @type {number} */ this.D$mangled = 0;
   /** @type {string} */ this.E$mangled = '';
   /** @type {RegExp} */ this.F$mangled = /./;
-  /** @type {Foo$mangled} */ this.G$mangled = new Foo$mangled();
+  /** @type {Foo} */ this.G$mangled = new Foo();
 };
 
-C$mangled.foo$mangled = function () {
-  C$mangled.h$mangled = 1;
-  C$mangled.i$mangled++;
+C.foo$mangled = function () {
+  C.h$mangled = 1;
+  C.i$mangled++;
 };
 
-/** @const {?} */ C$mangled.a$mangled = null;
-/** @const {boolean} */ C$mangled.b$mangled = false;
-/** @const {boolean} */ C$mangled.c$mangled = true;
-/** @const {number} */ C$mangled.d$mangled = 0;
-/** @const {string} */ C$mangled.e$mangled = '';
-/** @const {RegExp} */ C$mangled.f$mangled = /./;
+/** @const {?} */ C.a$mangled = null;
+/** @const {boolean} */ C.b$mangled = false;
+/** @const {boolean} */ C.c$mangled = true;
+/** @const {number} */ C.d$mangled = 0;
+/** @const {string} */ C.e$mangled = '';
+/** @const {RegExp} */ C.f$mangled = /./;
 
-/** @type {Foo$mangled} */ C$mangled.g$mangled = new Foo$mangled();
-/** @type {number} */ C$mangled.h$mangled = 0;
-/** @type {number} */ C$mangled.i$mangled = 0;
+/** @type {Foo} */ C.g$mangled = new Foo();
+/** @type {number} */ C.h$mangled = 0;
+/** @type {number} */ C.i$mangled = 0;

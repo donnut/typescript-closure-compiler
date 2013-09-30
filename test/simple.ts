@@ -39,8 +39,7 @@ function f(index: number): string {
   var j = { 0: 'a' };
   var k = { a: 0 };
   var l: { [index: number]: string } = { 0: 'a' };
-  var m: { [index: string]: number } = { a: 0 };
-  var n = { 'a': 0 };
+  var m: { [index: string]: number } = { 'a': 0 };
   return '';
 }
 

@@ -41,3 +41,6 @@ class Baz {
 }
 
 new Baz().toString();
+
+var x: any;
+x.foo().bar();

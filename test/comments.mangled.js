@@ -15,7 +15,7 @@ var __extends = function (d, b) {
  * @constructor
  * @struct
  */
-var MustNotBreak$mangled = function () {
+var MustNotBreak = function () {
 };
 
 /**
@@ -23,9 +23,9 @@ var MustNotBreak$mangled = function () {
  *
  * @constructor
  * @struct
- * @implements {C$mangled}
+ * @implements {C}
  */
-var A$mangled = function () {
+var A = function () {
   /**
    * a: number
    *
@@ -37,20 +37,20 @@ var A$mangled = function () {
 /**
  * c(a: number): boolean
  *
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-A$mangled.prototype.c$mangled = function (a$mangled) {
+A.prototype.c$mangled = function (a) {
   return false;
 };
 
 /**
  * static d(a: number): boolean
  *
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-A$mangled.d$mangled = function (a$mangled) {
+A.d$mangled = function (a) {
   return false;
 };
 
@@ -59,7 +59,7 @@ A$mangled.d$mangled = function (a$mangled) {
  *
  * @type {number}
  */
-A$mangled.b$mangled;
+A.b$mangled;
 
 /**
  * class B extends A
@@ -68,20 +68,20 @@ A$mangled.b$mangled;
  *
  * @constructor
  * @struct
- * @extends {A$mangled}
+ * @extends {A}
  */
-var B$mangled = function () {
-  A$mangled.call(this);
+var B = function () {
+  A.call(this);
 };
 
-__extends(B$mangled, A$mangled);
+__extends(B, A);
 
 /**
  * interface A
  *
  * @interface
  */
-var C$mangled = function () {
+var C = function () {
 };
 
 /**
@@ -89,28 +89,28 @@ var C$mangled = function () {
  *
  * @type {number}
  */
-C$mangled.prototype.a$mangled;
+C.prototype.a$mangled;
 
 /**
  * c(a: number): boolean
  *
- * @param {number} a$mangled
+ * @param {number} a
  * @returns {boolean}
  */
-C$mangled.prototype.c$mangled = function (a$mangled) {
+C.prototype.c$mangled = function (a) {
 };
 
 /**
  * module M
  */
-var M$mangled = {};
+var M = {};
 
 /**
  * enum E
  *
  * @enum {number}
  */
-M$mangled.E$mangled = {
+M.E$mangled = {
   // enum E.A
   A$mangled: 100,
   // enum E.B

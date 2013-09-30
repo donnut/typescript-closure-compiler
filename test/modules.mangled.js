@@ -1,30 +1,30 @@
-for (var i$mangled = 0; i$mangled < 10; i$mangled++) {
+for (var i = 0; i < 10; i++) {
 }
 
-var M$mangled = {};
+var M = {};
 
-/** @type {number} */ M$mangled.foo$mangled;
-/** @type {?{ baz$mangled: number }} */ M$mangled.bar$mangled = { baz$mangled: 1 };
+/** @type {number} */ M.foo$mangled;
+/** @type {?{ baz$mangled: number }} */ M.bar$mangled = { baz$mangled: 1 };
 
 /**
  * @constructor
  * @struct
  */
-M$mangled.Foo$mangled = function () {
+M.Foo$mangled = function () {
   /** @type {number} */ this.foo$mangled;
 };
 
-/** @type {number} */ M$mangled.Foo$mangled.bar$mangled;
+/** @type {number} */ M.Foo$mangled.bar$mangled;
 
-for (M$mangled.i$mangled = 0; M$mangled.i$mangled < 10; M$mangled.i$mangled++) {
+for (M.i$mangled = 0; M.i$mangled < 10; M.i$mangled++) {
 }
 
-var MM$mangled = {};
+var MM = {};
 
-/** @type {number} */ MM$mangled.foo$mangled;
+/** @type {number} */ MM.foo$mangled;
 
-M$mangled.MM$mangled = {};
+M.MM$mangled = {};
 
-/** @type {number} */ M$mangled.MM$mangled.foo$mangled;
+/** @type {number} */ M.MM$mangled.foo$mangled;
 
-/** @type {number} */ M$mangled.MM$mangled.bar$mangled;
+/** @type {number} */ M.MM$mangled.bar$mangled;

@@ -99,8 +99,7 @@ var f = function (index) {
   /** @type {?{ 0: string }} */ var j = { 0: 'a' };
   /** @type {?{ a: number }} */ var k = { a: 0 };
   /** @type {Object.<number, string>} */ var l = { 0: 'a' };
-  /** @type {Object.<string, number>} */ var m = { a: 0 };
-  /** @type {?} */ var n = { 'a': 0 };
+  /** @type {Object.<string, number>} */ var m = { 'a': 0 };
   return '';
 };
 
