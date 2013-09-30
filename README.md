@@ -22,10 +22,10 @@ Constant annotations are automatically added with the `--const` flag. The consta
 
 The `--mangle` flag attempts to mangle internal variable names to help disambiguate them from identical names in any extern files you may be using. Google Closure Compiler will not optimize properties with the same name as an extern, which means that code would otherwise never be compressed, inlined, or eliminated as dead code.
 
-    $ echo "var foo = 1;" > example.ts
+    $ echo "var foo = { length: 1 };" > example.ts
     $ tscc example.ts --mangle
     $ cat example.js
-    /** @type {number} */ var foo$mangled = 1;
+    /** @type {?{ length$mangled: number }} */ var foo = { length$mangled: 1 };
 
 ## License
 
