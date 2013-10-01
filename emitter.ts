@@ -1427,12 +1427,11 @@ module TypeScript {
             '@param {Function} d',
             '@param {Function} b',
           ]);
-          this.writeLineToOutput("var __extends = function (d, b) {");
-          this.writeLineToOutput("  for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];");
+          this.writeLineToOutput("function __extends(d, b) {");
           this.writeLineToOutput("  /** @constructor */ function __() { this.constructor = d; }");
           this.writeLineToOutput("  __.prototype = b.prototype;");
           this.writeLineToOutput("  d.prototype = new __();");
-          this.writeLineToOutput("};");
+          this.writeLineToOutput("}");
           this.writeLineToOutput("");
         }
       }

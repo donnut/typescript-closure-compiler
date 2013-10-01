@@ -2,12 +2,11 @@
  * @param {Function} d
  * @param {Function} b
  */
-var __extends = function (d, b) {
-  for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+function __extends(d, b) {
   /** @constructor */ function __() { this.constructor = d; }
   __.prototype = b.prototype;
   d.prototype = new __();
-};
+}
 
 /**
  * @constructor
