@@ -399,3 +399,16 @@ __extends(M.MM.Test2, M.MM.Test1);
 M.MM.Test2.prototype.f = function () {
   M.MM.Test1.prototype.f.call(this);
 };
+
+/**
+ * @interface
+ */
+M.MM.Test3 = function () {
+};
+
+/**
+ * @param {...?} foo$rest
+ * @returns {?}
+ */
+M.MM.Test3.prototype.foo = function (foo$rest) {
+};

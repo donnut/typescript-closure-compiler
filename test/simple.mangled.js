@@ -399,3 +399,16 @@ __extends(M.MM$mangled.Test2$mangled, M.MM$mangled.Test1$mangled);
 M.MM$mangled.Test2$mangled.prototype.f$mangled = function () {
   M.MM$mangled.Test1$mangled.prototype.f$mangled.call(this);
 };
+
+/**
+ * @interface
+ */
+M.MM$mangled.Test3$mangled = function () {
+};
+
+/**
+ * @param {...?} foo$rest
+ * @returns {?}
+ */
+M.MM$mangled.Test3$mangled.prototype.foo$mangled = function (foo$rest) {
+};

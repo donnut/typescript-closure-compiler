@@ -528,21 +528,21 @@ module TypeScript {
       }
       this.indenter.increaseIndent();
 
-      this.emitDefaultValueAssignments(funcDecl);
-      this.emitRestParameterInitializer(funcDecl);
-
-      if (this.shouldCaptureThis(funcDecl)) {
-        this.writeCaptureThisStatement(funcDecl);
-      }
-
-      if (funcDecl.isConstructor) {
-        this.emitConstructorStatements(funcDecl);
-      }
-      else if (funcDecl.block !== null) {
-        this.emitModuleElements(funcDecl.block.statements);
-      }
-
       if (funcDecl.block !== null) {
+        this.emitDefaultValueAssignments(funcDecl);
+        this.emitRestParameterInitializer(funcDecl);
+
+        if (this.shouldCaptureThis(funcDecl)) {
+          this.writeCaptureThisStatement(funcDecl);
+        }
+
+        if (funcDecl.isConstructor) {
+          this.emitConstructorStatements(funcDecl);
+        }
+        else {
+          this.emitModuleElements(funcDecl.block.statements);
+        }
+
         this.emitCommentsArray(funcDecl.block.closeBraceLeadingComments);
       }
 

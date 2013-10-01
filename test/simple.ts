@@ -183,5 +183,9 @@ module M {
       constructor() { super(); }
       f() { super.f(); }
     }
+
+    interface Test3 {
+      foo(...foo);
+    }
   }
 }
