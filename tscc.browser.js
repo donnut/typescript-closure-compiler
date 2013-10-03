@@ -56125,7 +56125,6 @@ else
             var svBaseName = this.thisBaseName;
             this.thisClassNode = classDecl;
             this.thisBaseName = null;
-            var className = classDecl.name.actualText;
             var temp = this.setContainer(EmitContainer.Class);
 
             this.recordSourceMappingStart(classDecl);
@@ -56188,6 +56187,12 @@ else
             this.setContainer(temp);
             this.thisClassNode = svClassNode;
             this.thisBaseName = svBaseName;
+
+            // Count a class as emitting a module because of declaration merging
+            var name = Emitter.getFullSymbolName(this.getSymbolForAST(classDecl));
+            if (this.emittedModuleNames.indexOf(name) < 0) {
+                this.emittedModuleNames.push(name);
+            }
         };
 
         Emitter.prototype.emitClassMembers = function (classDecl) {
