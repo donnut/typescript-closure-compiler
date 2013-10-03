@@ -8,6 +8,19 @@ function __extends(d, b) {
   d.prototype = new __();
 }
 
+/**
+ * Note: This currently doesn't work because the TypeScript compiler itself
+ * doesn't work correctly here (it doesn't even record the "declare" keyword).
+ * See also: https://typescript.codeplex.com/workitem/1699
+ *
+ * @enum {number}
+ */
+var E = {
+  X: 0,
+  Y: 1,
+  Z: 2
+};
+
 Mustache.to_html('<div>{{name}}</div>', { 'name': 'foo' });
 Foo.bar();
 new Foo(1).foo;

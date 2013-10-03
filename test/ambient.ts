@@ -1,5 +1,10 @@
 declare var Mustache: { to_html: (template: string, object: any) => string };
 
+// Note: This currently doesn't work because the TypeScript compiler itself
+// doesn't work correctly here (it doesn't even record the "declare" keyword).
+// See also: https://typescript.codeplex.com/workitem/1699
+declare enum E { X, Y, Z }
+
 declare class Foo {
   foo: number;
   constructor(foo: number);
@@ -15,6 +20,7 @@ new Foo(2).baz();
 
 declare module M {
   var Mustache: { to_html: (template: string, object: any) => string };
+  enum E { X, Y, Z }
 
   class Foo {
     foo: number;
