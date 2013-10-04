@@ -56688,17 +56688,22 @@ else if (name.indexOf('.') < 0)
             return ['@constructor', '@struct'].concat(this.getJSDocForExtends(classDecl.extendsList), this.getJSDocForImplements(classDecl.implementsList));
         };
 
+        // The symbol for GenericType nodes is sometimes stored in the name
+        Emitter.prototype.getSymbolForNameAST = function (ast) {
+            return this.getSymbolForAST(ast.nodeType() === TypeScript.NodeType.GenericType ? (ast).name : ast);
+        };
+
         Emitter.prototype.getJSDocForExtends = function (extendsList) {
             var _this = this;
             return extendsList !== null ? extendsList.members.map(function (member) {
-                return '@extends {' + Emitter.getFullSymbolName(_this.getSymbolForAST(member)) + '}';
+                return '@extends {' + Emitter.getFullSymbolName(_this.getSymbolForNameAST(member)) + '}';
             }) : Emitter.EMPTY_STRING_LIST;
         };
 
         Emitter.prototype.getJSDocForImplements = function (implementsList) {
             var _this = this;
             return implementsList !== null ? implementsList.members.map(function (member) {
-                return '@implements {' + Emitter.getFullSymbolName(_this.getSymbolForAST(member)) + '}';
+                return '@implements {' + Emitter.getFullSymbolName(_this.getSymbolForNameAST(member)) + '}';
             }) : Emitter.EMPTY_STRING_LIST;
         };
 
