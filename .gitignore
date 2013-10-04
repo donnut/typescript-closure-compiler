@@ -1,5 +1,5 @@
 .DS_Store
 /emitter.js
 /node_modules/
-/test/.*.js
+/test/normal-cases/.*.js
 /tscc.browser.js

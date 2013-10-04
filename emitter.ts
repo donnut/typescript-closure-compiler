@@ -1816,15 +1816,20 @@ module TypeScript {
         this.getJSDocForImplements(classDecl.implementsList));
     }
 
+    // The symbol for GenericType nodes is sometimes stored in the name
+    private getSymbolForNameAST(ast: AST): PullSymbol {
+      return this.getSymbolForAST(ast.nodeType() === TypeScript.NodeType.GenericType ? (<GenericType>ast).name : ast);
+    }
+
     private getJSDocForExtends(extendsList: ASTList): string[] {
       return extendsList !== null
-        ? extendsList.members.map(member => '@extends {' + Emitter.getFullSymbolName(this.getSymbolForAST(member)) + '}')
+        ? extendsList.members.map(member => '@extends {' + Emitter.getFullSymbolName(this.getSymbolForNameAST(member)) + '}')
         : Emitter.EMPTY_STRING_LIST;
     }
 
     private getJSDocForImplements(implementsList: ASTList): string[] {
       return implementsList !== null
-        ? implementsList.members.map(member => '@implements {' + Emitter.getFullSymbolName(this.getSymbolForAST(member)) + '}')
+        ? implementsList.members.map(member => '@implements {' + Emitter.getFullSymbolName(this.getSymbolForNameAST(member)) + '}')
         : Emitter.EMPTY_STRING_LIST;
     }
 
