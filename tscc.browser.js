@@ -56933,6 +56933,10 @@ else if (symbol.type !== null)
     })();
     TypeScript.Emitter = Emitter;
 })(TypeScript || (TypeScript = {}));
+TypeScript.ModuleDeclaration.prototype.shouldEmit = function() {
+  return !TypeScript.hasFlag(this.getModuleFlags(), TypeScript.ModuleFlags.Ambient) && this.members.members.length > 0;
+};
+
 TypeScript.ModuleDeclaration.prototype.emit = function(emitter) {
   emitter.emitModule(this);
 };
