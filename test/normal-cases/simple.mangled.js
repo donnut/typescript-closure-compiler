@@ -48,6 +48,10 @@ A.d$mangled = function (a) {
   return a === v;
 };
 
+A.prototype.loop$mangled = function () {
+  A.prototype.loop$mangled.call(this);
+};
+
 /** @type {number} */ A.b$mangled;
 
 /** @type {number} */ A.f$mangled = 0;
@@ -64,6 +68,10 @@ var B = function () {
 };
 
 __extends(B, A);
+
+B.prototype.loop$mangled = function () {
+  A.prototype.loop$mangled.call(this);
+};
 
 /**
  * @interface

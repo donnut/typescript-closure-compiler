@@ -816,7 +816,7 @@ module TypeScript {
 
       if (!name.isMissing()) {
         var pullSymbol = this.getSymbolForAST(name);
-        if (pullSymbol === null || pullSymbol.isError()) {
+        if (pullSymbol === null || pullSymbol.isError() || name.text() === 'prototype') {
           // This is caused by PullTypeResolver.resolveNameExpression avoiding
           // names with the any type and happens when referencing the symbol
           // for a try/catch statement among other things

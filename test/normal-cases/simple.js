@@ -48,6 +48,10 @@ A.d = function (a) {
   return a === v;
 };
 
+A.prototype.loop = function () {
+  A.prototype.loop.call(this);
+};
+
 /** @type {number} */ A.b;
 
 /** @type {number} */ A.f = 0;
@@ -64,6 +68,10 @@ var B = function () {
 };
 
 __extends(B, A);
+
+B.prototype.loop = function () {
+  A.prototype.loop.call(this);
+};
 
 /**
  * @interface

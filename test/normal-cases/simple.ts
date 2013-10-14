@@ -12,6 +12,7 @@ class A {
   static d(a: number): boolean { new A(); return a === v; }
   e = 0;
   static f = 0;
+  loop() { A.prototype.loop.call(this); }
 }
 
 class B extends A implements I {
@@ -19,6 +20,7 @@ class B extends A implements I {
     super();
     var capture = <any>super;
   }
+  loop() { A.prototype.loop.call(this); }
 }
 
 interface I {
