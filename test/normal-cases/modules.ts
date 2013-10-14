@@ -34,3 +34,10 @@ module Empty {
 module NotEmpty {
   interface Foo {}
 }
+
+class Class {
+}
+
+module Class {
+  interface Foo {}
+}

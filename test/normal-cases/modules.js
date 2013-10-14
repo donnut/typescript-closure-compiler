@@ -28,3 +28,24 @@ M.MM = {};
 /** @type {number} */ M.MM.foo;
 
 /** @type {number} */ M.MM.bar;
+
+var NotEmpty = {};
+
+/**
+ * @interface
+ */
+NotEmpty.Foo = function () {
+};
+
+/**
+ * @constructor
+ * @struct
+ */
+var Class = function () {
+};
+
+/**
+ * @interface
+ */
+Class.Foo = function () {
+};

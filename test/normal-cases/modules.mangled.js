@@ -28,3 +28,24 @@ M.MM$mangled = {};
 /** @type {number} */ M.MM$mangled.foo$mangled;
 
 /** @type {number} */ M.MM$mangled.bar$mangled;
+
+var NotEmpty = {};
+
+/**
+ * @interface
+ */
+NotEmpty.Foo$mangled = function () {
+};
+
+/**
+ * @constructor
+ * @struct
+ */
+var Class = function () {
+};
+
+/**
+ * @interface
+ */
+Class.Foo$mangled = function () {
+};
