@@ -55072,6 +55072,7 @@ var TypeScript;
             this.captureThisStmtString = "var _this = this;";
             this.resolvingContext = new TypeScript.PullTypeResolutionContext();
             this.emittedModuleNames = [];
+            this.emittedSymbolNames = {};
             this.document = null;
             this.copyrightElement = null;
             TypeScript.globalSemanticInfoChain = semanticInfoChain;
@@ -55668,8 +55669,21 @@ var TypeScript;
             var symbol = this.getSymbolForAST(varDecl);
             var parentSymbol = symbol ? symbol.getContainer() : null;
             var parentKind = parentSymbol ? parentSymbol.kind : TypeScript.PullElementKind.None;
+            var hasInitializer = varDecl.init !== null;
 
-            this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), this.getJSDocForVariableDeclaration(varDecl));
+            if (symbol !== null) {
+                var id = parentSymbol !== null ? parentSymbol.pullSymbolID : -1;
+                var names = this.emittedSymbolNames[id] || [];
+                var isAdditionalDeclaration = names.indexOf(symbol.name) >= 0;
+                this.emittedSymbolNames[id] = names.concat(symbol.name);
+                if (isAdditionalDeclaration && !hasInitializer) {
+                    return;
+                }
+            }
+
+            if (!isAdditionalDeclaration) {
+                this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), this.getJSDocForVariableDeclaration(varDecl));
+            }
             this.recordSourceMappingStart(varDecl);
 
             if (parentKind === TypeScript.PullElementKind.Class) {
@@ -55679,11 +55693,12 @@ var TypeScript;
                 this.recordSourceMappingStart(varDecl.id);
                 this.writeToOutput(Emitter.mangleSymbolName(this.getSymbolForAST(varDecl)));
                 this.recordSourceMappingEnd(varDecl.id);
-            } else {
+            } else if (!isAdditionalDeclaration) {
                 this.emitFullSymbolVariableStatement(symbol);
+            } else {
+                this.writeToOutput(Emitter.getFullSymbolName(symbol));
             }
 
-            var hasInitializer = (varDecl.init !== null);
             if (hasInitializer) {
                 this.writeToOutputTrimmable(" = ");
                 varDecl.init.emit(this);
