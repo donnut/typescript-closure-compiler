@@ -166,6 +166,7 @@ module TypeScript {
     public captureThisStmtString = "var _this = this;";
     private resolvingContext = new TypeScript.PullTypeResolutionContext();
     private emittedModuleNames: string[] = [];
+    private emittedSymbolNames: { [id: number]: string[] } = {};
 
     public document: Document = null;
     private copyrightElement: AST = null;
@@ -785,8 +786,24 @@ module TypeScript {
       var symbol = this.getSymbolForAST(varDecl);
       var parentSymbol = symbol ? symbol.getContainer() : null;
       var parentKind = parentSymbol ? parentSymbol.kind : TypeScript.PullElementKind.None;
+      var hasInitializer = varDecl.init !== null;
 
-      this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), this.getJSDocForVariableDeclaration(varDecl));
+      // Google's Closure Compiler requires one variable statement per function.
+      // Note that "emittedSymbolNames" is a hack since I don't think the compiler
+      // actually stores any information about aliases so I can't tell them apart.
+      if (symbol !== null) {
+        var id = parentSymbol !== null ? parentSymbol.pullSymbolID : -1;
+        var names = this.emittedSymbolNames[id] || [];
+        var isAdditionalDeclaration = names.indexOf(symbol.name) >= 0;
+        this.emittedSymbolNames[id] = names.concat(symbol.name);
+        if (isAdditionalDeclaration && !hasInitializer) {
+          return;
+        }
+      }
+
+      if (!isAdditionalDeclaration) {
+        this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), this.getJSDocForVariableDeclaration(varDecl));
+      }
       this.recordSourceMappingStart(varDecl);
 
       if (parentKind === TypeScript.PullElementKind.Class) {
@@ -796,11 +813,12 @@ module TypeScript {
         this.recordSourceMappingStart(varDecl.id);
         this.writeToOutput(Emitter.mangleSymbolName(this.getSymbolForAST(varDecl)));
         this.recordSourceMappingEnd(varDecl.id);
-      } else {
+      } else if (!isAdditionalDeclaration) {
         this.emitFullSymbolVariableStatement(symbol);
+      } else {
+        this.writeToOutput(Emitter.getFullSymbolName(symbol));
       }
 
-      var hasInitializer = (varDecl.init !== null);
       if (hasInitializer) {
         this.writeToOutputTrimmable(" = ");
         varDecl.init.emit(this);
