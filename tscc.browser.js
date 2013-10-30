@@ -55087,7 +55087,6 @@ var TypeScript;
         };
 
         Emitter.prototype.emitImportDeclaration = function (importDeclAST) {
-            throw new Error('Import statements are not supported');
         };
 
         Emitter.prototype.setSourceMappings = function (mapper) {
