@@ -1,6 +1,6 @@
 {
   "name": "typescript-closure-compiler",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Patches the TypeScript compiler to generate JSDoc annotations",
   "repository": "https://github.com/evanw/typescript-closure-compiler.git",
   "scripts": {

@@ -189,7 +189,6 @@ module TypeScript {
     }
 
     public emitImportDeclaration(importDeclAST: ImportDeclaration) {
-      throw new Error('Import statements are not supported');
     }
 
     public setSourceMappings(mapper: SourceMapper) {
